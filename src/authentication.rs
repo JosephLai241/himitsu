@@ -2,7 +2,7 @@
 
 use argon2::{hash_encoded, Config, ThreadMode::Parallel, Variant::Argon2id};
 
-use crate::errors::SkeletonsError;
+use crate::{errors::SkeletonsError, models::encryption::Encryption};
 
 /// Returns the Argon2 configuration object. This object contains the parameters
 /// used to generate a secure password.
@@ -36,4 +36,13 @@ pub fn generate_hash(password: &str, salt: &str) -> Result<String, SkeletonsErro
         salt.as_bytes(),
         &argon2_config,
     )?)
+}
+
+/// Verify the password against the stored Argon2 password hash.
+pub fn check_authorization(
+    encryption_values: &Encryption,
+    password: &str,
+) -> Result<bool, SkeletonsError> {
+    argon2::verify_encoded(&encryption_values.password_hash, password.as_bytes())
+        .map_or_else(|error| Err(SkeletonsError::Argon2Error(error)), Ok)
 }
