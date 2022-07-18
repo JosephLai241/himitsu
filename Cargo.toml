@@ -1,0 +1,25 @@
+[package]
+author = "Joseph Lai <joseph.lai241@protonmail.com>"
+categories = ["authentication", "command-line-utilities", "config", "cryptography", "development-tools"]
+description = "An encrypted CLI tool for managing secrets on your machine"
+edition = "2021"
+homepage = ""
+keywords = ["encrypt", "config", "secret", "token", "vault"]
+license = "MIT"
+name = "skeletons"
+readme = "README.md"
+repository = ""
+version = "1.0.0"
+
+#[[bin]]
+#name = "skeletons"
+#path = "src/main.rs"
+
+[dependencies]
+ansi_term = "0.12.1"
+clap = { version = "3.2.12", features = ["derive"] }
+directories = "4.0.1"
+inquire = "0.2.1"
+lazy_static = "1.4.0"
+rust-argon2 = "1.0.0"
+thiserror = "1.0.31"
