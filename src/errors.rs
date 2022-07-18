@@ -1,6 +1,7 @@
 //! Contains errors that may be raised in the application.
 
 use argon2;
+use inquire;
 use serde_json;
 use thiserror::Error;
 
@@ -16,6 +17,14 @@ pub enum SkeletonsError {
     /// An error occurred while attempting to access application-specific directories.
     #[error("Could not access system application directories!")]
     ApplicationError,
+
+    /// The user failed to log in within 3 tries.
+    #[error("Goodbye.")]
+    FailedToLogin,
+
+    /// An error occurred while attempting to process `inquire` prompts.
+    #[error("Inquire error: {0}")]
+    InquireError(#[from] inquire::error::InquireError),
 
     /// An error occurred while performing any IO tasks.
     #[error("IO error: {0}")]
