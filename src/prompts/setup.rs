@@ -10,8 +10,7 @@ use spinners::{Spinner, Spinners};
 
 use super::config::get_authentication_config;
 
-/// Run the initial setup's prompts. The only required prompt is setting the master password. Users
-/// can optionally set the salt and nonce used for encrypting/decrypting secrets.
+/// Run the initial setup's prompt - set a master password to unlock the vault.
 pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
     inquire::set_global_render_config(get_authentication_config());
 
