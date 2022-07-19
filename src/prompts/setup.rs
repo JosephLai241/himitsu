@@ -2,7 +2,9 @@
 
 use std::io::Write;
 
-use crate::{authentication, errors::SkeletonsError, models::encryption::Encryption, utils::cache};
+use crate::{
+    authentication, errors::SkeletonsError, models::encryption::Encryption, utils::config,
+};
 
 use inquire::{self, validator::StringValidator, Password, PasswordDisplayMode};
 use rand::{self, distributions::Alphanumeric, Rng};
@@ -44,7 +46,7 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
         salt,
     };
 
-    let mut crypt_json = cache::get_crypt_json()?;
+    let mut crypt_json = config::get_crypt_json()?;
     crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
 
     loading_bar.stop_and_persist("💯", "Successfully set up encryption!".into());

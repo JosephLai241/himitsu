@@ -1,4 +1,4 @@
-//! Cache utilities for `skeleton`.
+//! Config utilities for `skeleton`.
 
 use std::{
     fs::{create_dir_all, File},

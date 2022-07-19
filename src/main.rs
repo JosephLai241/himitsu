@@ -2,6 +2,7 @@
 
 mod authentication;
 mod cli;
+mod encryption;
 mod errors;
 mod models;
 mod prompts;
@@ -10,7 +11,7 @@ mod utils;
 use cli::Args;
 use errors::SkeletonsError;
 use prompts::{authenticate, setup};
-use utils::{cache, paint};
+use utils::{config, paint};
 
 use ansi_term::Color;
 use clap::Parser;
@@ -32,7 +33,7 @@ fn main() {
         );
     }
 
-    match cache::get_encryption_values() {
+    match config::get_encryption_values() {
         Ok(crypt_json) => match crypt_json {
             Some(encryption_values) => {
                 if let Err(error) = authenticate::authenticate_user(&encryption_values) {
@@ -47,7 +48,7 @@ fn main() {
                     paint::paint_error(error);
                 }
 
-                match cache::get_encryption_values() {
+                match config::get_encryption_values() {
                     Ok(crypt_json) => match crypt_json {
                         Some(encryption_values) => {
                             // TODO: CONTINUE WITH NORMAL EXECUTION FLOW.
