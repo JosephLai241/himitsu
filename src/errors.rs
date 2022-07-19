@@ -1,7 +1,6 @@
 //! Contains errors that may be raised in the application.
 
 use argon2;
-use chacha20poly1305::aead;
 use inquire;
 use serde_json;
 use thiserror::Error;
@@ -27,6 +26,14 @@ pub enum SkeletonsError {
     #[error("AEAD encryption error: {0}")]
     AEADEncryptionError(String),
 
+    /// An error occurred while attempting to get a handle to the system clipboard.
+    #[error("Clipboard context error: {0}")]
+    ClipboardContextError(String),
+
+    /// An error occurred while attempting to manipulate the system clipboard's contents.
+    #[error("Clipboard error: {0}")]
+    ClipboardContentsError(String),
+
     /// The user failed to log in within 3 tries.
     #[error("Goodbye.")]
     FailedToLogin,
@@ -46,4 +53,12 @@ pub enum SkeletonsError {
     /// An error occurred while performing any serde_json tasks.
     #[error("Serde JSON error: {0}")]
     SerdeJsonError(#[from] serde_json::Error),
+
+    /// An error occurred while attempting to store a nonce.
+    #[error("Store nonce error: {0}")]
+    StoreNonceError(String),
+
+    /// An error occurred while attempting to store a secret.
+    #[error("Store secret error: {0}")]
+    StoreSecretError(String),
 }
