@@ -1,7 +1,7 @@
 //! Config utilities for `skeleton`.
 
 use std::{
-    fs::{create_dir_all, File},
+    fs::{self, File},
     io::Read,
 };
 
@@ -19,7 +19,7 @@ pub fn get_encryption_values() -> Result<Option<Encryption>, SkeletonsError> {
             if !crypt_json_path.exists() {
                 match &crypt_json_path.parent() {
                     Some(parent) => {
-                        create_dir_all(parent)?;
+                        fs::create_dir_all(parent)?;
                         let _file = File::create(&crypt_json_path)?;
 
                         return Ok(None);
