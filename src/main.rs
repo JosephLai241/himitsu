@@ -8,7 +8,7 @@ mod models;
 mod prompts;
 mod utils;
 
-use cli::Args;
+use cli::{subcommands, Args};
 use errors::SkeletonsError;
 use prompts::{authenticate, setup};
 use utils::{config, paint};
@@ -31,35 +31,45 @@ fn main() {
             "{}",
             Color::Fixed(172).paint(String::from_utf8_lossy(&ASCII_ART[..]))
         );
-    }
-
-    match config::get_encryption_values() {
-        Ok(crypt_json) => match crypt_json {
-            Some(encryption_values) => {
-                if let Err(error) = authenticate::authenticate_user(&encryption_values) {
-                    paint::paint_error(error)
-                } else {
-                    // TODO: CONTINUE WITH NORMAL EXECUTION FLOW.
-                    unimplemented!()
-                }
-            }
-            None => {
-                if let Err(error) = setup::run_initial_setup_prompts() {
-                    paint::paint_error(error);
-                }
-
-                match config::get_encryption_values() {
-                    Ok(crypt_json) => match crypt_json {
-                        Some(encryption_values) => {
-                            // TODO: CONTINUE WITH NORMAL EXECUTION FLOW.
-                            unimplemented!()
+    } else {
+        match config::get_encryption_values() {
+            Ok(crypt_json) => match crypt_json {
+                Some(encryption_values) => {
+                    if let Err(error) = authenticate::authenticate_user(&encryption_values) {
+                        paint::paint_error(error)
+                    } else {
+                        if let Some(subcommand) = &args.subcommand {
+                            if let Err(error) =
+                                subcommands::run_subcommands(&encryption_values, subcommand)
+                            {
+                                paint::paint_error(error);
+                            }
                         }
-                        None => paint::paint_error(SkeletonsError::ApplicationError),
-                    },
-                    Err(error) => paint::paint_error(error),
+                    }
                 }
-            }
-        },
-        Err(error) => paint::paint_error(error),
+                None => {
+                    if let Err(error) = setup::run_initial_setup_prompts() {
+                        paint::paint_error(error);
+                    }
+
+                    match config::get_encryption_values() {
+                        Ok(crypt_json) => match crypt_json {
+                            Some(encryption_values) => {
+                                if let Some(subcommand) = &args.subcommand {
+                                    if let Err(error) =
+                                        subcommands::run_subcommands(&encryption_values, subcommand)
+                                    {
+                                        paint::paint_error(error);
+                                    }
+                                }
+                            }
+                            None => paint::paint_error(SkeletonsError::ApplicationError),
+                        },
+                        Err(error) => paint::paint_error(error),
+                    }
+                }
+            },
+            Err(error) => paint::paint_error(error),
+        }
     }
 }
