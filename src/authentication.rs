@@ -14,7 +14,7 @@ use crate::{errors::SkeletonsError, models::encryption::Encryption};
 /// * Use 2 passes
 /// * Use the Argon2id variant
 ///
-fn get_argon2_config<'a>() -> Config<'a> {
+pub fn get_argon2_config<'a>() -> Config<'a> {
     Config {
         hash_length: 32,
         lanes: 1,
