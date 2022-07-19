@@ -1,6 +1,7 @@
 //! Contains errors that may be raised in the application.
 
 use argon2;
+use chacha20poly1305::aead;
 use inquire;
 use serde_json;
 use thiserror::Error;
@@ -17,6 +18,14 @@ pub enum SkeletonsError {
     /// An error occurred while attempting to access application-specific directories.
     #[error("Could not access system application directories!")]
     ApplicationError,
+
+    /// An error occurred while attempting to dencrypt something.
+    #[error("AEAD decryption error: {0}")]
+    AEADDencryptionError(String),
+
+    /// An error occurred while attempting to encrypt something.
+    #[error("AEAD encryption error: {0}")]
+    AEADEncryptionError(String),
 
     /// The user failed to log in within 3 tries.
     #[error("Goodbye.")]
