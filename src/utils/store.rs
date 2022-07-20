@@ -10,8 +10,13 @@ use ring::digest::{Context, SHA256};
 use crate::errors::SkeletonsError;
 
 /// Generate a SHA256 hash for a new secret.
-fn get_sha256_hash(ciphertext: &Vec<u8>, nonce: &GenericArray<u8, U24>) -> String {
+fn get_sha256_hash(
+    encrypted_anatomy: &Vec<u8>,
+    ciphertext: &Vec<u8>,
+    nonce: &GenericArray<u8, U24>,
+) -> String {
     let mut hash_string = String::from_utf8_lossy(&ciphertext).to_string();
+    hash_string.push_str(&String::from_utf8_lossy(&encrypted_anatomy));
     hash_string.push_str(&String::from_utf8_lossy(&nonce));
 
     let mut context = Context::new(&SHA256);
@@ -28,7 +33,7 @@ pub fn store_secret(
 ) -> Result<(), SkeletonsError> {
     match ProjectDirs::from("", "", "skeletons") {
         Some(project_directory) => {
-            let secret_hash = get_sha256_hash(&ciphertext, nonce);
+            let secret_hash = get_sha256_hash(&encrypted_anatomy, &ciphertext, nonce);
             let secrets_path = project_directory
                 .data_dir()
                 .join("closet")
