@@ -77,6 +77,9 @@ pub fn encrypt_secret(
         Ok,
     );
 
+    encryption_spinner
+        .stop_and_persist("✅", Color::Green.bold().paint("ENCRYPTION OK").to_string());
+
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
     store::store_secret(ciphertext?, encrypted_anatomy?, nonce)?;
 
