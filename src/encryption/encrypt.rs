@@ -1,20 +1,25 @@
 //! Contains encryption functions for `skeletons`.
 
 use ansi_term::Color;
+use anyhow::bail;
 use chacha20poly1305::{
-    aead::{Aead, NewAead},
+    aead::{consts::U24, generic_array::GenericArray, Aead, NewAead},
     Key, XChaCha20Poly1305, XNonce,
 };
 use rand::{rngs::OsRng, RngCore};
+use serde_json;
 use spinners::{Spinner, Spinners};
 
 use crate::{
-    authentication::get_argon2_config, errors::SkeletonsError, models::encryption::Encryption,
+    authentication::get_argon2_config,
+    errors::SkeletonsError,
+    models::{encryption::Encryption, metadata::Anatomy},
     utils::store,
 };
 
 /// Store the encrypted secret.
 pub fn encrypt_secret(
+    anatomy: &Anatomy,
     encryption_data: &Encryption,
     secret_value: &str,
 ) -> Result<(), SkeletonsError> {
@@ -38,20 +43,68 @@ pub fn encrypt_secret(
 
     let nonce = XNonce::from_slice(&secret_nonce);
 
-    match cipher.encrypt(XNonce::from_slice(&secret_nonce), secret_value.as_bytes()) {
-        Ok(ciphertext) => {
-            encryption_spinner
-                .stop_and_persist("💯", format!("{}", Color::Green.bold().paint("Done.")));
+    let ciphertext = generate_ciphertext(&cipher, "Ciphertext", &nonce, secret_value.as_bytes())
+        .map_or_else(
+            |error| {
+                encryption_spinner.stop_and_persist(
+                    "❗️",
+                    Color::Red
+                        .bold()
+                        .paint("SECRET ENCRYPTION FAILED.")
+                        .to_string(),
+                );
+                bail!(error);
+            },
+            Ok,
+        );
+    let encrypted_anatomy = generate_ciphertext(
+        &cipher,
+        "Anatomy",
+        &nonce,
+        serde_json::to_string(anatomy)?.as_bytes(),
+    )
+    .map_or_else(
+        |error| {
+            encryption_spinner.stop_and_persist(
+                "❗️",
+                Color::Red
+                    .bold()
+                    .paint("ANATOMY ENCRYPTION FAILED.")
+                    .to_string(),
+            );
+            bail!(error);
+        },
+        Ok,
+    );
 
-            let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
-            store::store_secret(ciphertext, nonce)?;
-            write_spinner.stop_and_persist("🔒", "Secret has been stored!".into());
-        }
-        Err(error) => {
-            encryption_spinner.stop_and_persist("❗️", "ENCRYPTION FAILED.".into());
-            return Err(SkeletonsError::AEADEncryptionError(error.to_string()));
-        }
-    }
+    let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
+    store::store_secret(ciphertext?, encrypted_anatomy?, nonce)?;
+
+    write_spinner.stop_and_persist(
+        "🔒",
+        Color::Green
+            .bold()
+            .paint("Secret has been stored!")
+            .to_string(),
+    );
 
     Ok(())
+}
+
+/// Generate the ciphertext from the cipher, nonce, and secret.
+fn generate_ciphertext(
+    cipher: &XChaCha20Poly1305,
+    item_type: &str,
+    nonce: &GenericArray<u8, U24>,
+    value: &[u8],
+) -> Result<Vec<u8>, SkeletonsError> {
+    cipher.encrypt(nonce, value).map_or_else(
+        |error| {
+            Err(SkeletonsError::AEADEncryptionError(format!(
+                "{item_type} error: {}",
+                error.to_string()
+            )))
+        },
+        Ok,
+    )
 }
