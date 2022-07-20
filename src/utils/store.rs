@@ -1,6 +1,6 @@
 //! Contains utilities for storing secrets.
 
-use std::fs::{self, File};
+use std::fs;
 
 use chacha20poly1305::aead::{consts::U24, generic_array::GenericArray};
 use data_encoding::HEXLOWER;
@@ -23,6 +23,7 @@ fn get_sha256_hash(ciphertext: &Vec<u8>, nonce: &GenericArray<u8, U24>) -> Strin
 /// Store the secret onto the machine.
 pub fn store_secret(
     ciphertext: Vec<u8>,
+    encrypted_anatomy: Vec<u8>,
     nonce: &GenericArray<u8, U24>,
 ) -> Result<(), SkeletonsError> {
     match ProjectDirs::from("", "", "skeletons") {
@@ -42,6 +43,9 @@ pub fn store_secret(
             }
             if let Err(error) = fs::write(secrets_path.join("nonce"), nonce) {
                 return Err(SkeletonsError::StoreNonceError(error.to_string()));
+            }
+            if let Err(error) = fs::write(secrets_path.join("anatomy"), encrypted_anatomy) {
+                return Err(SkeletonsError::StoreAnatomyError(error.to_string()));
             }
 
             Ok(())
