@@ -1,5 +1,6 @@
 //! Contains errors that may be raised in the application.
 
+use anyhow;
 use argon2;
 use inquire;
 use serde_json;
@@ -54,6 +55,10 @@ pub enum SkeletonsError {
     #[error("Serde JSON error: {0}")]
     SerdeJsonError(#[from] serde_json::Error),
 
+    /// An error occurred while attempting to store a secret's anatomy.
+    #[error("Store anatomy error: {0}")]
+    StoreAnatomyError(String),
+
     /// An error occurred while attempting to store a nonce.
     #[error("Store nonce error: {0}")]
     StoreNonceError(String),
@@ -61,4 +66,8 @@ pub enum SkeletonsError {
     /// An error occurred while attempting to store a secret.
     #[error("Store secret error: {0}")]
     StoreSecretError(String),
+
+    /// Catch any other errors that may arise, such as `bail!`s returned via `Anyhow`.
+    #[error(transparent)]
+    Transparent(#[from] anyhow::Error),
 }
