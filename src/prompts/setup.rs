@@ -1,14 +1,24 @@
 //! Contains the execution flow for the initial setup prompts.
 
-use std::io::Write;
+use std::{fs, io::Write};
+
+use ansi_term::Color;
+use chacha20poly1305::{
+    aead::{Aead, NewAead},
+    Key, XChaCha20Poly1305, XNonce,
+};
+use inquire::{self, validator::StringValidator, Password, PasswordDisplayMode};
+use rand::{self, distributions::Alphanumeric, rngs::OsRng, Rng, RngCore};
+use serde_json;
+use spinners::{Spinner, Spinners};
 
 use crate::{
-    authentication, errors::SkeletonsError, models::encryption::Encryption, utils::config,
+    authentication,
+    errors::SkeletonsError,
+    lookup::get_lookup_dir_path,
+    models::{encryption::Encryption, metadata::LookupTable},
+    utils::config,
 };
-
-use inquire::{self, validator::StringValidator, Password, PasswordDisplayMode};
-use rand::{self, distributions::Alphanumeric, Rng};
-use spinners::{Spinner, Spinners};
 
 use super::config::get_authentication_config;
 
@@ -35,21 +45,75 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
 
     let mut loading_bar = Spinner::new(Spinners::Aesthetic, "Generating encryption data...".into());
 
+    let encryption_data = generate_salt_and_password_hash(&password)?;
+    create_lookup_table_and_nonce(&encryption_data)?;
+
+    let mut crypt_json = config::get_crypt_json()?;
+    crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
+
+    loading_bar.stop_and_persist(
+        "✅",
+        Color::Green
+            .bold()
+            .paint("Vault is configured.")
+            .to_string(),
+    );
+
+    Ok(encryption_data)
+}
+
+/// Generate a new salt and password hash.
+fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, SkeletonsError> {
     let salt: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
         .map(char::from)
         .collect();
 
-    let encryption_data = Encryption {
-        password_hash: authentication::generate_hash(&password, &salt)?,
+    Ok(Encryption {
+        password_hash: authentication::generate_raw_hash(password, &salt)?,
         salt,
-    };
+    })
+}
 
-    let mut crypt_json = config::get_crypt_json()?;
-    crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
+/// Create a new lookup table and nonce, then write the two values to a file in the `lookup`
+/// directory.
+fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), SkeletonsError> {
+    let lookup_dir_path = get_lookup_dir_path()?;
 
-    loading_bar.stop_and_persist("💯", "Successfully set up encryption!".into());
+    let cipher = XChaCha20Poly1305::new(Key::from_slice(&encryption_data.password_hash));
 
-    Ok(encryption_data)
+    let mut nonce = [0u8; 24];
+    OsRng.fill_bytes(&mut nonce);
+
+    let lookup_nonce = XNonce::from_slice(&nonce);
+
+    let lookup_table = LookupTable::new();
+
+    match cipher.encrypt(
+        &lookup_nonce,
+        serde_json::to_string(&lookup_table)?.as_bytes(),
+    ) {
+        Ok(encrypted_lookup_table) => {
+            if !lookup_dir_path.exists() {
+                fs::create_dir_all(&lookup_dir_path)?;
+            }
+
+            if let Err(error) = fs::write(lookup_dir_path.join("nonce"), lookup_nonce) {
+                return Err(SkeletonsError::StoreNonceError(format!(
+                    "Lookup table nonce: {error}"
+                )));
+            }
+            if let Err(error) = fs::write(lookup_dir_path.join("table"), encrypted_lookup_table) {
+                return Err(SkeletonsError::StoreSecretError(format!(
+                    "Lookup table: {error}"
+                )));
+            }
+
+            Ok(())
+        }
+        Err(error) => Err(SkeletonsError::AEADEncryptionError(format!(
+            "Lookup table encryption error: {error}"
+        ))),
+    }
 }
