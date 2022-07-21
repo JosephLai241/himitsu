@@ -6,19 +6,11 @@ use chrono::Local;
 use crate::models::metadata::Anatomy;
 
 /// Create a new `Anatomy` for a particular secret.
-pub fn create_new_anatomy(category: &Option<String>, tags: &Option<Vec<String>>) -> Anatomy {
-    let category = match category {
-        Some(category_name) => category_name.to_string(),
-        None => "Unclassified".to_string(),
-    };
-    let tags = match tags {
-        Some(tag_values) => tag_values.clone(),
-        None => vec![],
-    };
-
+pub fn create_new_anatomy(category: String, label: String, tags: Vec<String>) -> Anatomy {
     Anatomy {
         category,
         date_created: Local::now().format("%m-%d-%Y %H:%M:%S").to_string(),
+        label,
         last_accessed: None,
         tags,
     }
