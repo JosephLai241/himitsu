@@ -19,7 +19,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
         let password = Password::new("Enter the password:")
             .with_display_mode(PasswordDisplayMode::Hidden)
             .with_display_toggle_enabled()
-            .with_help_message("Press '<CTRL> + r' to reveal input")
+            .with_help_message("Press \"<CTRL> + r\" to reveal input")
             .prompt_skippable()?;
 
         match password {
