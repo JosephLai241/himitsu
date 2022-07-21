@@ -3,7 +3,7 @@
 use clap::Subcommand;
 
 use crate::{
-    encryption::encrypt::encrypt_secret, errors::SkeletonsError, models::encryption::Encryption,
+    encryption::encrypt, errors::SkeletonsError, models::encryption::Encryption, prompts::add,
     utils::anatomy,
 };
 
@@ -16,9 +16,9 @@ pub enum SubCommands {
         #[clap(long, short)]
         category: Option<String>,
 
-        /// The secret itself.
+        /// The secret's label.
         #[clap(value_parser)]
-        secret: Option<String>,
+        label: Option<String>,
 
         /// Set tags for this secret. Enter multiple values delimited by a space to set multiple
         /// tags.
@@ -53,15 +53,14 @@ pub fn run_subcommands(
     match subcommand {
         SubCommands::Add {
             category,
-            secret,
+            label,
             tags,
-        } => match secret {
-            Some(secret_value) => {
-                let anatomy = anatomy::create_new_anatomy(category, tags);
-                encrypt_secret(&anatomy, encryption_data, &secret_value)?;
-            }
-            None => {}
-        },
+        } => {
+            let (label, secret, category, tags) = add::run_add_secret(category, label, tags)?;
+            let anatomy = anatomy::create_new_anatomy(category, label, tags);
+
+            encrypt::encrypt_secret(&anatomy, encryption_data, secret)?;
+        }
         SubCommands::Edit { label } => {}
         SubCommands::Remove { label } => {}
         SubCommands::Use { label } => {}
