@@ -3,7 +3,14 @@
 use clap::Subcommand;
 
 use crate::{
-    encryption::encrypt, errors::SkeletonsError, models::encryption::Encryption, prompts::add,
+    encryption::{decrypt::decrypt_secret, encrypt},
+    errors::SkeletonsError,
+    lookup::search_in_lookup_table,
+    models::encryption::Encryption,
+    prompts::{
+        add,
+        use_secret::{self, run_select_secret},
+    },
     utils::anatomy,
 };
 
@@ -63,7 +70,18 @@ pub fn run_subcommands(
         }
         SubCommands::Edit { label } => {}
         SubCommands::Remove { label } => {}
-        SubCommands::Use { label } => {}
+        SubCommands::Use { label } => {
+            let label = use_secret::run_use_secret(label)?;
+            let found_matches = search_in_lookup_table(encryption_data, label)?;
+
+            if found_matches.is_empty() {
+                // TODO: SHOW PROMPT: "DISPLAY ALL STORED SECRETS? [Y/N]"
+                unimplemented!()
+            } else {
+                let hash_id = run_select_secret(found_matches)?;
+                decrypt_secret(encryption_data, &hash_id)?;
+            }
+        }
     }
 
     Ok(())
