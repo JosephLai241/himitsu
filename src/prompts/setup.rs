@@ -20,11 +20,11 @@ use crate::{
     utils::config,
 };
 
-use super::config::get_authentication_config;
+use super::config::get_inquire_config;
 
 /// Run the initial setup's prompt - set a master password to unlock the vault.
 pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
-    inquire::set_global_render_config(get_authentication_config());
+    inquire::set_global_render_config(get_inquire_config());
 
     let password_validator: StringValidator = &|input| {
         if input.chars().count() < 10 {
@@ -105,9 +105,7 @@ fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), Ske
                 )));
             }
             if let Err(error) = fs::write(lookup_dir_path.join("table"), encrypted_lookup_table) {
-                return Err(SkeletonsError::StoreSecretError(format!(
-                    "Lookup table: {error}"
-                )));
+                return Err(SkeletonsError::StoreLookupTableError(error.to_string()));
             }
 
             Ok(())
