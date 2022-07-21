@@ -6,11 +6,11 @@ use ansi_term::Color;
 use inquire::{self, Password, PasswordDisplayMode};
 use spinners::{Spinner, Spinners};
 
-use super::config::get_authentication_config;
+use super::config;
 
 /// Run the authentication prompt.
 pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), SkeletonsError> {
-    inquire::set_global_render_config(get_authentication_config());
+    inquire::set_global_render_config(config::get_inquire_config());
 
     let mut validated = false;
     let mut try_count = 0;
@@ -29,7 +29,10 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
                 if input.is_empty() {
                     login_spinner.stop_and_persist(
                         "❗️",
-                        format!("{}", Color::Fixed(172).paint("Please enter a password.")),
+                        format!(
+                            "{}",
+                            Color::Fixed(172).bold().paint("Please enter a password.")
+                        ),
                     );
                 } else {
                     if !authentication::check_authorization(encryption_values, &input)? {
@@ -38,7 +41,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
                                 "🤔",
                                 format!(
                                     "{}",
-                                    Color::Fixed(172).paint(
+                                    Color::Fixed(172).bold().paint(
                                         "Looks like you're not who we think you are. Perhaps try again?"
                                     )
                                 ),
@@ -54,7 +57,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
                     } else {
                         login_spinner.stop_and_persist(
                             "💯",
-                            format!("{}", Color::Green.bold().paint("Success!")),
+                            format!("{}", Color::Green.bold().paint("Success.")),
                         );
 
                         validated = true;
