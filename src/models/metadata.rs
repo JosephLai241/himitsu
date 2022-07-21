@@ -54,3 +54,20 @@ impl LookupTable {
         }
     }
 }
+
+/// This struct temporarily holds a modified entry in the lookup table while searching for matches,
+/// which includes the secret's hash ID as well as its `Anatomy`.
+#[derive(Debug)]
+pub struct LookupMatch {
+    /// The secret's corresponding `Anatomy`.
+    pub anatomy: Anatomy,
+    /// The secret's hash ID.
+    pub hash: String,
+}
+
+impl LookupMatch {
+    /// Create a LookupMatch from the secret's hash and `Anatomy`.
+    pub fn create(anatomy: Anatomy, hash: String) -> Self {
+        Self { anatomy, hash }
+    }
+}
