@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// Contains the metadata for each secret's `anatomy`.
+/// Contains metadata for each secret.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Anatomy {
     /// The category this secret belongs in.
@@ -47,7 +47,7 @@ pub struct LookupTable {
 }
 
 impl LookupTable {
-    /// Create a new LookupTable.
+    /// Create a new `LookupTable`.
     pub fn new() -> LookupTable {
         LookupTable {
             table: HashMap::new(),
@@ -66,7 +66,7 @@ pub struct LookupMatch {
 }
 
 impl LookupMatch {
-    /// Create a LookupMatch from the secret's hash and `Anatomy`.
+    /// Create a `LookupMatch` from the secret's hash and `Anatomy`.
     pub fn create(anatomy: Anatomy, hash: String) -> Self {
         Self { anatomy, hash }
     }
