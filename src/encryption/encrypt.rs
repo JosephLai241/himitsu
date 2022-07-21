@@ -1,18 +1,19 @@
 //! Contains encryption functions for `skeletons`.
 
 use ansi_term::Color;
-use anyhow::bail;
 use chacha20poly1305::{
     aead::{consts::U24, generic_array::GenericArray, Aead, NewAead},
     Key, XChaCha20Poly1305, XNonce,
 };
+use data_encoding::HEXLOWER;
 use rand::{rngs::OsRng, RngCore};
-use serde_json;
+use ring::digest::{Context, SHA256};
 use spinners::{Spinner, Spinners};
 
 use crate::{
     authentication::get_argon2_config,
     errors::SkeletonsError,
+    lookup::{decrypt_lookup_table, write_to_lookup_table},
     models::{encryption::Encryption, metadata::Anatomy},
     utils::store,
 };
@@ -21,7 +22,7 @@ use crate::{
 pub fn encrypt_secret(
     anatomy: &Anatomy,
     encryption_data: &Encryption,
-    secret_value: &str,
+    secret: String,
 ) -> Result<(), SkeletonsError> {
     let mut encryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Encrypting your secret...".into());
@@ -39,50 +40,74 @@ pub fn encrypt_secret(
 
     let nonce = XNonce::from_slice(&secret_nonce);
 
-    let ciphertext = generate_ciphertext(&cipher, "Ciphertext", &nonce, secret_value.as_bytes())
-        .map_or_else(
-            |error| {
-                encryption_spinner.stop_and_persist(
-                    "❗️",
-                    Color::Red
-                        .bold()
-                        .paint("SECRET ENCRYPTION FAILED.")
-                        .to_string(),
-                );
-                bail!(error);
-            },
-            Ok,
-        );
-    let encrypted_anatomy = generate_ciphertext(
-        &cipher,
-        "Anatomy",
-        &nonce,
-        serde_json::to_string(anatomy)?.as_bytes(),
-    )
-    .map_or_else(
-        |error| {
+    match cipher.encrypt(nonce, secret.as_bytes()) {
+        Ok(ciphertext) => {
+            encryption_spinner.stop_and_persist(
+                "✅",
+                Color::Green
+                    .bold()
+                    .paint("Successfully encrypted your secret.")
+                    .to_string(),
+            );
+
+            update_lookup_table(anatomy, ciphertext, encryption_data, nonce)?;
+
+            Ok(())
+        }
+        Err(error) => {
             encryption_spinner.stop_and_persist(
                 "❗️",
                 Color::Red
                     .bold()
-                    .paint("ANATOMY ENCRYPTION FAILED.")
+                    .paint("SECRET ENCRYPTION FAILED.")
                     .to_string(),
             );
-            bail!(error);
-        },
-        Ok,
-    );
 
-    encryption_spinner.stop_and_persist(
-        "✅",
-        Color::Green
-            .bold()
-            .paint("Successfully encrypted your secret.")
-            .to_string(),
-    );
+            Err(SkeletonsError::AEADEncryptionError(error.to_string()))
+        }
+    }
+}
 
+/// Generate a SHA256 hash for a new secret.
+fn generate_sha256_hash(
+    anatomy: &Anatomy,
+    ciphertext: &Vec<u8>,
+    nonce: &GenericArray<u8, U24>,
+) -> String {
+    let mut hash_string = String::from_utf8_lossy(&ciphertext).to_string();
+    hash_string.push_str(&format!(
+        "{}{}{}{:?}{:?}",
+        anatomy.category, anatomy.date_created, anatomy.label, anatomy.last_accessed, anatomy.tags
+    ));
+    hash_string.push_str(&String::from_utf8_lossy(&nonce));
+
+    let mut context = Context::new(&SHA256);
+    context.update(hash_string.as_bytes());
+
+    HEXLOWER.encode(context.finish().as_ref())
+}
+
+/// Update the lookup table with the secret's hash ID and anatomy.
+fn update_lookup_table(
+    anatomy: &Anatomy,
+    ciphertext: Vec<u8>,
+    encryption_data: &Encryption,
+    nonce: &GenericArray<u8, U24>,
+) -> Result<(), SkeletonsError> {
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
-    store::store_secret(ciphertext?, encrypted_anatomy?, nonce)?;
+
+    let secret_hash = generate_sha256_hash(&anatomy, &ciphertext, nonce);
+
+    let mut lookup_table = decrypt_lookup_table(&encryption_data)?;
+
+    write_to_lookup_table(
+        anatomy.to_owned(),
+        encryption_data,
+        &mut lookup_table,
+        &secret_hash,
+    )?;
+
+    store::store_secret(ciphertext, nonce, &secret_hash)?;
 
     write_spinner.stop_and_persist(
         "🔒",
@@ -93,22 +118,4 @@ pub fn encrypt_secret(
     );
 
     Ok(())
-}
-
-/// Generate the ciphertext from the cipher, nonce, and secret.
-fn generate_ciphertext(
-    cipher: &XChaCha20Poly1305,
-    item_type: &str,
-    nonce: &GenericArray<u8, U24>,
-    value: &[u8],
-) -> Result<Vec<u8>, SkeletonsError> {
-    cipher.encrypt(nonce, value).map_or_else(
-        |error| {
-            Err(SkeletonsError::AEADEncryptionError(format!(
-                "{item_type} error: {}",
-                error.to_string()
-            )))
-        },
-        Ok,
-    )
 }
