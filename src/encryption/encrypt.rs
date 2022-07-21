@@ -11,7 +11,7 @@ use ring::digest::{Context, SHA256};
 use spinners::{Spinner, Spinners};
 
 use crate::{
-    authentication::get_argon2_config,
+    authentication,
     errors::SkeletonsError,
     lookup::{decrypt_lookup_table, write_to_lookup_table},
     models::{encryption::Encryption, metadata::Anatomy},
@@ -27,14 +27,16 @@ pub fn encrypt_secret(
     let mut encryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Encrypting your secret...".into());
 
-    let mut secret_salt = [0u8; 32];
     let mut secret_nonce = [0u8; 24];
-    OsRng.fill_bytes(&mut secret_salt);
     OsRng.fill_bytes(&mut secret_nonce);
 
     // Generate a new hash for this particular secret.
-    let argon2_config = get_argon2_config();
-    let key = argon2::hash_raw(&encryption_data.password_hash, &secret_salt, &argon2_config)?;
+    let argon2_config = authentication::get_argon2_config();
+    let key = argon2::hash_raw(
+        &encryption_data.password_hash,
+        &encryption_data.salt,
+        &argon2_config,
+    )?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&key));
 

@@ -8,7 +8,7 @@ use chacha20poly1305::{
     Key, XChaCha20Poly1305, XNonce,
 };
 use inquire::{self, validator::StringValidator, Password, PasswordDisplayMode};
-use rand::{self, distributions::Alphanumeric, rngs::OsRng, Rng, RngCore};
+use rand::{self, rngs::OsRng, RngCore};
 use serde_json;
 use spinners::{Spinner, Spinners};
 
@@ -34,11 +34,11 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
         }
     };
 
-    let password = Password::new("Set a master password:")
+    let password = Password::new("Set a password for your vault:")
         .with_display_mode(PasswordDisplayMode::Hidden)
         .with_display_toggle_enabled()
         .with_help_message(
-            "Password must have at least 10 characters. Press '<CTRL> + r' to reveal input",
+            "Password must have at least 10 characters. Press \"<CTRL> + r\" to reveal input",
         )
         .with_validator(password_validator)
         .prompt()?;
@@ -64,11 +64,8 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
 
 /// Generate a new salt and password hash.
 fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, SkeletonsError> {
-    let salt: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(32)
-        .map(char::from)
-        .collect();
+    let mut salt = [0u8; 32];
+    OsRng.fill_bytes(&mut salt);
 
     Ok(Encryption {
         password_hash: authentication::generate_raw_hash(password, &salt)?,

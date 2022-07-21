@@ -28,14 +28,10 @@ pub fn get_argon2_config<'a>() -> Config<'a> {
 
 /// Generate a new hash using Argon2. See [`get_argon2_config`]'s docstring for
 /// Argon2's hash generation configuration settings.
-pub fn generate_raw_hash(password: &str, salt: &str) -> Result<Vec<u8>, SkeletonsError> {
+pub fn generate_raw_hash(password: &str, salt: &[u8; 32]) -> Result<Vec<u8>, SkeletonsError> {
     let argon2_config = get_argon2_config();
 
-    Ok(argon2::hash_raw(
-        password.as_bytes(),
-        salt.as_bytes(),
-        &argon2_config,
-    )?)
+    Ok(argon2::hash_raw(password.as_bytes(), salt, &argon2_config)?)
 }
 
 /// Verify the password against the stored Argon2 password hash.
@@ -45,7 +41,7 @@ pub fn check_authorization(
 ) -> Result<bool, SkeletonsError> {
     argon2::verify_raw(
         password.as_bytes(),
-        &encryption_values.salt.as_bytes(),
+        &encryption_values.salt,
         &encryption_values.password_hash,
         &get_argon2_config(),
     )

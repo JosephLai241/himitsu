@@ -8,5 +8,5 @@ pub struct Encryption {
     /// The Argon2 password hash.
     pub password_hash: Vec<u8>,
     /// The salt associated with the master password.
-    pub salt: String,
+    pub salt: [u8; 32],
 }
