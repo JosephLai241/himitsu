@@ -3,10 +3,11 @@
 use anyhow;
 use argon2;
 use inquire;
+use regex;
 use serde_json;
 use thiserror::Error;
 
-use std::io;
+use std::{io, string::FromUtf8Error};
 
 /// Contains variants for errors that may be raised throughout this program.
 #[derive(Debug, Error)]
@@ -39,6 +40,10 @@ pub enum SkeletonsError {
     #[error("Goodbye.")]
     FailedToLogin,
 
+    /// An error occurred while attempting to convert bytes to a string.
+    #[error("FromUtf8Error: {0}")]
+    FromUtf8Error(#[from] FromUtf8Error),
+
     /// An error occurred while attempting to process `inquire` prompts.
     #[error("Inquire error: {0}")]
     InquireError(#[from] inquire::error::InquireError),
@@ -47,17 +52,25 @@ pub enum SkeletonsError {
     #[error("IO error: {0}")]
     IOError(#[from] io::Error),
 
+    /// An error occurred while traversing the lookup table.
+    #[error("Lookup table error: {0}")]
+    LookupError(String),
+
     /// An error occurred while performing any path-related tasks.
     #[error("Path error: {0}")]
     PathError(String),
+
+    /// An error occurred while executing a regex expression.
+    #[error("Regex error: {0}")]
+    RegexError(#[from] regex::Error),
 
     /// An error occurred while performing any serde_json tasks.
     #[error("Serde JSON error: {0}")]
     SerdeJsonError(#[from] serde_json::Error),
 
-    /// An error occurred while attempting to store a secret's anatomy.
-    #[error("Store anatomy error: {0}")]
-    StoreAnatomyError(String),
+    /// AN error occurred while attempting to store the lookup table.
+    #[error("Store lookup table error: {0}")]
+    StoreLookupTableError(String),
 
     /// An error occurred while attempting to store a nonce.
     #[error("Store nonce error: {0}")]
