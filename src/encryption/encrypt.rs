@@ -33,11 +33,7 @@ pub fn encrypt_secret(
 
     // Generate a new hash for this particular secret.
     let argon2_config = get_argon2_config();
-    let key = argon2::hash_raw(
-        &encryption_data.password_hash.as_bytes(),
-        &secret_salt,
-        &argon2_config,
-    )?;
+    let key = argon2::hash_raw(&encryption_data.password_hash, &secret_salt, &argon2_config)?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&key));
 
@@ -77,8 +73,13 @@ pub fn encrypt_secret(
         Ok,
     );
 
-    encryption_spinner
-        .stop_and_persist("✅", Color::Green.bold().paint("ENCRYPTION OK").to_string());
+    encryption_spinner.stop_and_persist(
+        "✅",
+        Color::Green
+            .bold()
+            .paint("Successfully encrypted your secret.")
+            .to_string(),
+    );
 
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
     store::store_secret(ciphertext?, encrypted_anatomy?, nonce)?;

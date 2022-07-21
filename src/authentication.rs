@@ -1,6 +1,6 @@
 //! Contains utilities used for authentication.
 
-use argon2::{hash_encoded, Config, ThreadMode::Parallel, Variant::Argon2id};
+use argon2::{Config, ThreadMode::Parallel, Variant::Argon2id};
 
 use crate::{errors::SkeletonsError, models::encryption::Encryption};
 
@@ -28,10 +28,10 @@ pub fn get_argon2_config<'a>() -> Config<'a> {
 
 /// Generate a new hash using Argon2. See [`get_argon2_config`]'s docstring for
 /// Argon2's hash generation configuration settings.
-pub fn generate_hash(password: &str, salt: &str) -> Result<String, SkeletonsError> {
+pub fn generate_raw_hash(password: &str, salt: &str) -> Result<Vec<u8>, SkeletonsError> {
     let argon2_config = get_argon2_config();
 
-    Ok(hash_encoded(
+    Ok(argon2::hash_raw(
         password.as_bytes(),
         salt.as_bytes(),
         &argon2_config,
@@ -43,6 +43,11 @@ pub fn check_authorization(
     encryption_values: &Encryption,
     password: &str,
 ) -> Result<bool, SkeletonsError> {
-    argon2::verify_encoded(&encryption_values.password_hash, password.as_bytes())
-        .map_or_else(|error| Err(SkeletonsError::Argon2Error(error)), Ok)
+    argon2::verify_raw(
+        password.as_bytes(),
+        &encryption_values.salt.as_bytes(),
+        &encryption_values.password_hash,
+        &get_argon2_config(),
+    )
+    .map_or_else(|error| Err(SkeletonsError::Argon2Error(error)), Ok)
 }
