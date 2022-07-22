@@ -1,15 +1,16 @@
 //! Contains subcommands for `skeletons`.
 
+use ansi_term::Color;
 use clap::Subcommand;
 
 use crate::{
-    encryption::{decrypt::decrypt_secret, encrypt},
+    encryption::{self, decrypt, encrypt},
     errors::SkeletonsError,
-    lookup::search_in_lookup_table,
+    lookup::{self, LookupMode},
     models::encryption::Encryption,
     prompts::{
         add,
-        use_secret::{self, run_select_secret},
+        use_secret::{self},
     },
     utils::anatomy,
 };
@@ -72,14 +73,29 @@ pub fn run_subcommands(
         SubCommands::Remove { label } => {}
         SubCommands::Use { label } => {
             let label = use_secret::run_use_secret(label)?;
-            let found_matches = search_in_lookup_table(encryption_data, label)?;
+            let found_matches =
+                lookup::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
 
             if found_matches.is_empty() {
-                // TODO: SHOW PROMPT: "DISPLAY ALL STORED SECRETS? [Y/N]"
-                unimplemented!()
+                let list_all_secrets = use_secret::run_show_all_secrets()?;
+
+                if list_all_secrets {
+                    let found_matches =
+                        lookup::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+                    let hash_id = use_secret::run_select_secret(found_matches)?;
+
+                    lookup::update_last_accessed(encryption_data, &hash_id)?;
+
+                    decrypt::decrypt_secret(encryption_data, &hash_id)?;
+                } else {
+                    println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
+                }
             } else {
-                let hash_id = run_select_secret(found_matches)?;
-                decrypt_secret(encryption_data, &hash_id)?;
+                let hash_id = use_secret::run_select_secret(found_matches)?;
+
+                lookup::update_last_accessed(encryption_data, &hash_id)?;
+
+                decrypt::decrypt_secret(encryption_data, &hash_id)?;
             }
         }
     }
