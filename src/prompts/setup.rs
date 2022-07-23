@@ -20,12 +20,10 @@ use crate::{
     utils::config,
 };
 
-use super::config::get_inquire_config;
+use super::config::{get_inquire_config, ConfigType};
 
 /// Run the initial setup's prompt - set a master password to unlock the vault.
 pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
-    inquire::set_global_render_config(get_inquire_config());
-
     let password_validator: StringValidator = &|input| {
         if input.chars().count() < 10 {
             Err("The password must have at least 10 characters!".to_string())
@@ -40,6 +38,7 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
         .with_help_message(
             "Password must have at least 10 characters. Press \"<CTRL> + r\" to reveal input",
         )
+        .with_render_config(get_inquire_config(ConfigType::Standard))
         .with_validator(password_validator)
         .prompt()?;
 

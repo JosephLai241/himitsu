@@ -6,12 +6,10 @@ use ansi_term::Color;
 use inquire::{self, Password, PasswordDisplayMode};
 use spinners::{Spinner, Spinners};
 
-use super::config;
+use super::config::{self, ConfigType};
 
 /// Run the authentication prompt.
 pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), SkeletonsError> {
-    inquire::set_global_render_config(config::get_inquire_config());
-
     let mut validated = false;
     let mut try_count = 0;
 
@@ -20,6 +18,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
             .with_display_mode(PasswordDisplayMode::Hidden)
             .with_display_toggle_enabled()
             .with_help_message("Press \"<CTRL> + r\" to reveal input")
+            .with_render_config(config::get_inquire_config(ConfigType::Standard))
             .prompt_skippable()?;
 
         match password {
