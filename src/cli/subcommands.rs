@@ -38,6 +38,18 @@ pub enum SubCommands {
         /// The label corresponding to the secret.
         #[clap(value_parser)]
         label: Option<String>,
+
+        /// Set a new category for this secret.
+        #[clap(long = "new-category", short = 'c')]
+        new_category: Option<String>,
+
+        /// Set a new label for this secret.
+        #[clap(long = "new-label", short = 'l')]
+        new_label: Option<String>,
+
+        /// Set new tags for this secret.
+        #[clap(long = "new-tags", multiple_values = true, short = 't')]
+        new_tags: Option<Vec<String>>,
     },
     /// Remove an existing secret (search by label).
     Remove {
