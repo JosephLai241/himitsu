@@ -16,8 +16,20 @@ use crate::{
     utils::clipboard::set_clipboard,
 };
 
+/// This enum contains variants for what should be done with the decrypted secret.
+pub enum DecryptionMode {
+    /// Decrypt and return the secret for editing if applicable.
+    EditSecret,
+    /// Decrypt and use the secret (copy it to the clipboard).
+    UseSecret,
+}
+
 /// Decrypt a secret based on its SHA256 hash ID and copy it to the system clipboard.
-pub fn decrypt_secret(encryption_data: &Encryption, hash_id: &str) -> Result<(), SkeletonsError> {
+pub fn decrypt_secret(
+    decryption_mode: DecryptionMode,
+    encryption_data: &Encryption,
+    hash_id: &str,
+) -> Result<Option<String>, SkeletonsError> {
     let mut decryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Decrypting the secret...".into());
 
@@ -48,12 +60,22 @@ pub fn decrypt_secret(encryption_data: &Encryption, hash_id: &str) -> Result<(),
             );
 
             let secret = String::from_utf8_lossy(&decrypted_secret).to_string();
-            match set_clipboard(secret) {
-                Ok(()) => {
-                    println!("📋 The secret is copied to your clipboard. Press \"<CTRL> + v\" to paste your secret.");
-                    Ok(())
-                }
-                Err(error) => Err(error),
+
+            match decryption_mode {
+                DecryptionMode::EditSecret => Ok(Some(secret)),
+                DecryptionMode::UseSecret => match set_clipboard(secret) {
+                    Ok(()) => {
+                        println!(
+                            "{}",
+                            Color::Green
+                                .bold()
+                                .paint("\n📋 The secret is copied to your clipboard.")
+                        );
+
+                        Ok(None)
+                    }
+                    Err(error) => Err(error),
+                },
             }
         }
         Err(error) => {
