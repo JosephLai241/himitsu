@@ -12,13 +12,13 @@ use std::{io, string::FromUtf8Error};
 /// Contains variants for errors that may be raised throughout this program.
 #[derive(Debug, Error)]
 pub enum SkeletonsError {
-    /// An error occurred while performing Argon2 tasks.
-    #[error("Argon2 error: {0}")]
-    Argon2Error(#[from] argon2::Error),
-
     /// An error occurred while attempting to access application-specific directories.
     #[error("Could not access system application directories!")]
     ApplicationError,
+
+    /// An error occurred while performing Argon2 tasks.
+    #[error("Argon2 error: {0}")]
+    Argon2Error(#[from] argon2::Error),
 
     /// An error occurred while attempting to dencrypt something.
     #[error("AEAD decryption error: {0}")]
