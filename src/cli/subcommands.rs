@@ -4,15 +4,14 @@ use ansi_term::Color;
 use clap::Subcommand;
 
 use crate::{
-    encryption::{self, decrypt, encrypt},
+    encryption::{
+        decrypt::{self, DecryptionMode},
+        encrypt,
+    },
     errors::SkeletonsError,
     lookup::{self, LookupMode},
-    models::encryption::Encryption,
-    prompts::{
-        add,
-        use_secret::{self},
-    },
-    utils::anatomy,
+    models::{encryption::Encryption, metadata::Anatomy},
+    prompts::{add, edit, use_secret, utils},
 };
 
 /// Contains subcommands for `skeletons`.
@@ -65,7 +64,7 @@ pub enum SubCommands {
     },
 }
 
-/// Execution block for this program's subcommands.
+/// Execution blocks for this program's subcommands.
 pub fn run_subcommands(
     encryption_data: &Encryption,
     subcommand: &SubCommands,
@@ -77,37 +76,169 @@ pub fn run_subcommands(
             tags,
         } => {
             let (label, secret, category, tags) = add::run_add_secret(category, label, tags)?;
-            let anatomy = anatomy::create_new_anatomy(category, label, tags);
+            let anatomy = Anatomy::create_from(category, label, tags);
 
             encrypt::encrypt_secret(&anatomy, encryption_data, secret)?;
         }
-        SubCommands::Edit { label } => {}
-        SubCommands::Remove { label } => {}
-        SubCommands::Use { label } => {
-            let label = use_secret::run_use_secret(label)?;
+        SubCommands::Edit {
+            label,
+            new_category,
+            new_label,
+            new_tags,
+        } => {
+            let label = utils::run_get_label(label)?;
             let found_matches =
                 lookup::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
 
             if found_matches.is_empty() {
-                let list_all_secrets = use_secret::run_show_all_secrets()?;
+                let list_all_secrets = utils::run_confirmation_prompt(
+                    "No matches were found. List all stored secrets?",
+                )?;
 
                 if list_all_secrets {
                     let found_matches =
                         lookup::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
-                    let hash_id = use_secret::run_select_secret(found_matches)?;
 
-                    lookup::update_last_accessed(encryption_data, &hash_id)?;
+                    let lookup_match = use_secret::run_select_secret(found_matches)?;
+                    let secret = decrypt::decrypt_secret(
+                        DecryptionMode::EditSecret,
+                        encryption_data,
+                        &lookup_match.hash,
+                    )?
+                    .unwrap();
 
-                    decrypt::decrypt_secret(encryption_data, &hash_id)?;
+                    let update_targets = edit::run_edit_targets()?;
+
+                    let mut new_anatomy = lookup_match.anatomy.clone();
+                    let mut new_secret = None;
+
+                    for target in update_targets {
+                        match target {
+                            "Category" => edit::run_edit_category(new_category, &mut new_anatomy)?,
+                            "Label" => edit::run_edit_label(new_label, &mut new_anatomy)?,
+                            "Secret" => new_secret = Some(edit::run_edit_secret()?),
+                            "Tags" => edit::run_edit_tags(&mut new_anatomy, new_tags)?,
+                            _ => {}
+                        }
+                    }
+
+                    lookup::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+
+                    encrypt::encrypt_secret(
+                        &new_anatomy,
+                        encryption_data,
+                        new_secret.unwrap_or(secret),
+                    )?;
                 } else {
                     println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                 }
             } else {
-                let hash_id = use_secret::run_select_secret(found_matches)?;
+                let lookup_match = use_secret::run_select_secret(found_matches)?;
+                let secret = decrypt::decrypt_secret(
+                    DecryptionMode::EditSecret,
+                    encryption_data,
+                    &lookup_match.hash,
+                )?
+                .unwrap();
 
-                lookup::update_last_accessed(encryption_data, &hash_id)?;
+                let update_targets = edit::run_edit_targets()?;
 
-                decrypt::decrypt_secret(encryption_data, &hash_id)?;
+                let mut new_anatomy = lookup_match.anatomy.clone();
+                let mut new_secret = None;
+
+                for target in update_targets {
+                    match target {
+                        "Category" => edit::run_edit_category(new_category, &mut new_anatomy)?,
+                        "Label" => edit::run_edit_label(new_label, &mut new_anatomy)?,
+                        "Secret" => new_secret = Some(edit::run_edit_secret()?),
+                        "Tags" => edit::run_edit_tags(&mut new_anatomy, new_tags)?,
+                        _ => {}
+                    }
+                }
+
+                lookup::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+
+                encrypt::encrypt_secret(
+                    &new_anatomy,
+                    encryption_data,
+                    new_secret.unwrap_or(secret),
+                )?;
+            }
+        }
+        SubCommands::Remove { label } => {
+            let label = utils::run_get_label(label)?;
+            let found_matches =
+                lookup::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
+
+            if found_matches.is_empty() {
+                let list_all_secrets = utils::run_confirmation_prompt(
+                    "No matches were found. List all stored secrets?",
+                )?;
+
+                if list_all_secrets {
+                    let found_matches =
+                        lookup::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+
+                    let lookup_match = use_secret::run_select_secret(found_matches)?;
+
+                    if utils::run_confirmation_prompt(
+                        "Are you sure you want to permanently delete the selected secret?",
+                    )? {
+                        lookup::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                    } else {
+                        println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
+                    }
+                } else {
+                    println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
+                }
+            } else {
+                let lookup_match = use_secret::run_select_secret(found_matches)?;
+
+                if utils::run_confirmation_prompt(
+                    "Are you sure you want to permanently delete the selected secret?",
+                )? {
+                    lookup::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                } else {
+                    println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
+                }
+            }
+        }
+        SubCommands::Use { label } => {
+            let label = utils::run_get_label(label)?;
+            let found_matches =
+                lookup::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
+
+            if found_matches.is_empty() {
+                let list_all_secrets = utils::run_confirmation_prompt(
+                    "No matches were found. List all stored secrets?",
+                )?;
+
+                if list_all_secrets {
+                    let found_matches =
+                        lookup::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+
+                    let lookup_match = use_secret::run_select_secret(found_matches)?;
+
+                    lookup::update_last_accessed(encryption_data, &lookup_match.hash)?;
+
+                    let _ = decrypt::decrypt_secret(
+                        DecryptionMode::UseSecret,
+                        encryption_data,
+                        &lookup_match.hash,
+                    )?;
+                } else {
+                    println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
+                }
+            } else {
+                let lookup_match = use_secret::run_select_secret(found_matches)?;
+
+                lookup::update_last_accessed(encryption_data, &lookup_match.hash)?;
+
+                let _ = decrypt::decrypt_secret(
+                    DecryptionMode::UseSecret,
+                    encryption_data,
+                    &lookup_match.hash,
+                )?;
             }
         }
     }
