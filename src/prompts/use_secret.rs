@@ -3,49 +3,17 @@
 use std::collections::HashMap;
 
 use ansi_term::{Color, Style};
-use inquire::{self, validator::StringValidator, Confirm, Select, Text};
+use inquire::{self, Select};
+use serde_json;
 
 use crate::{errors::SkeletonsError, models::metadata::LookupMatch};
 
 use super::config::{self, ConfigType};
 
-/// Run the use secret prompts:
-///
-/// * Ask for a label (if one is not provided)
-/// * Check the lookup table for matches
-///     * If there is one exact match for the label:
-///         + Decrypt the secret, then copy it to the clipboard
-///     * If there are multiple exact matches:
-///         + Use an `inquire::Select` widget to display all matches
-///         + Decrypt the secret, then copy it to the clipboard
-///     * If there are no exact matches:
-///         + Use the `regex` crate to search for partial label matches, then display those matches
-///         in an `inquire::Select`
-///         + Decrypt the secret, then copy it to the clipboard
-pub fn run_use_secret(label: &Option<String>) -> Result<String, SkeletonsError> {
-    let label_validator: StringValidator = &|input| {
-        if input.is_empty() {
-            Err("A label is required!".to_string())
-        } else {
-            Ok(())
-        }
-    };
-
-    let label = match label {
-        Some(label_value) => label_value.to_owned(),
-        None => Text::new("Enter the label of the secret you want to use:")
-            .with_render_config(config::get_inquire_config(ConfigType::Standard))
-            .with_validator(label_validator)
-            .prompt()?,
-    };
-
-    Ok(label)
-}
-
 /// Run the selection prompt if multiple label matches are found in the lookup table.
 pub fn run_select_secret(
     found_matches: HashMap<String, LookupMatch>,
-) -> Result<String, SkeletonsError> {
+) -> Result<LookupMatch, SkeletonsError> {
     let mut pairs = HashMap::new();
     let mut options = Vec::new();
 
@@ -75,7 +43,8 @@ pub fn run_select_secret(
                     })
             );
 
-        pairs.insert(option.to_string(), lookup_match.hash.to_string());
+        pairs.insert(option.to_string(), serde_json::to_string(lookup_match)?);
+
         options.push(option);
     }
 
@@ -84,20 +53,9 @@ pub fn run_select_secret(
         .prompt()?;
 
     match pairs.get(&selection) {
-        Some(hash) => Ok(hash.to_string()),
+        Some(lookup_match) => Ok(serde_json::from_str(lookup_match)?),
         None => Err(SkeletonsError::LookupError(
             "Could not find a matching hash ID for this secret!".to_string(),
         )),
     }
-}
-
-/// Run the selection prompt to list all stored secrets if no matches are found and the user
-/// consents to listing all stored secrets.
-pub fn run_show_all_secrets() -> Result<bool, SkeletonsError> {
-    Ok(
-        Confirm::new("No matches were found. List all stored secrets?")
-            .with_default(true)
-            .with_render_config(config::get_inquire_config(ConfigType::Confirm))
-            .prompt()?,
-    )
 }
