@@ -13,7 +13,7 @@ use spinners::{Spinner, Spinners};
 use crate::{
     authentication,
     errors::SkeletonsError,
-    lookup::{decrypt_lookup_table, write_to_lookup_table},
+    lookup::{modify, secure},
     models::{encryption::Encryption, metadata::Anatomy},
     utils::store,
 };
@@ -100,9 +100,9 @@ fn update_lookup_table(
 
     let secret_hash = generate_sha256_hash(&anatomy, &ciphertext, nonce);
 
-    let mut lookup_table = decrypt_lookup_table(&encryption_data)?;
+    let mut lookup_table = secure::decrypt_lookup_table(&encryption_data)?;
 
-    write_to_lookup_table(
+    modify::write_to_lookup_table(
         anatomy.to_owned(),
         encryption_data,
         &mut lookup_table,

@@ -15,7 +15,7 @@ use spinners::{Spinner, Spinners};
 use crate::{
     authentication,
     errors::SkeletonsError,
-    lookup::get_lookup_dir_path,
+    lookup::utils,
     models::{encryption::Encryption, metadata::LookupTable},
     utils::config,
 };
@@ -75,7 +75,7 @@ fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, Skeleto
 /// Create a new lookup table and nonce, then write the two values to a file in the `lookup`
 /// directory.
 fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), SkeletonsError> {
-    let lookup_dir_path = get_lookup_dir_path()?;
+    let lookup_dir_path = utils::get_lookup_dir_path()?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&encryption_data.password_hash));
 
