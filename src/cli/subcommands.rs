@@ -37,18 +37,6 @@ pub enum SubCommands {
         /// The label corresponding to the secret.
         #[clap(value_parser)]
         label: Option<String>,
-
-        /// Set a new category for this secret.
-        #[clap(long = "new-category", short = 'c')]
-        new_category: Option<String>,
-
-        /// Set a new label for this secret.
-        #[clap(long = "new-label", short = 'l')]
-        new_label: Option<String>,
-
-        /// Set new tags for this secret.
-        #[clap(long = "new-tags", multiple_values = true, short = 't')]
-        new_tags: Option<Vec<String>>,
     },
     /// Remove an existing secret (search by label).
     Remove {
@@ -80,12 +68,7 @@ pub fn run_subcommands(
 
             encrypt::encrypt_secret(&anatomy, encryption_data, secret)?;
         }
-        SubCommands::Edit {
-            label,
-            new_category,
-            new_label,
-            new_tags,
-        } => {
+        SubCommands::Edit { label } => {
             let label = utils::run_get_label(label)?;
             let found_matches =
                 lookup::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
@@ -114,10 +97,10 @@ pub fn run_subcommands(
 
                     for target in update_targets {
                         match target {
-                            "Category" => edit::run_edit_category(new_category, &mut new_anatomy)?,
-                            "Label" => edit::run_edit_label(new_label, &mut new_anatomy)?,
+                            "Category" => edit::run_edit_category(&mut new_anatomy)?,
+                            "Label" => edit::run_edit_label(&mut new_anatomy)?,
                             "Secret" => new_secret = Some(edit::run_edit_secret()?),
-                            "Tags" => edit::run_edit_tags(&mut new_anatomy, new_tags)?,
+                            "Tags" => edit::run_edit_tags(&mut new_anatomy)?,
                             _ => {}
                         }
                     }
@@ -148,10 +131,10 @@ pub fn run_subcommands(
 
                 for target in update_targets {
                     match target {
-                        "Category" => edit::run_edit_category(new_category, &mut new_anatomy)?,
-                        "Label" => edit::run_edit_label(new_label, &mut new_anatomy)?,
+                        "Category" => edit::run_edit_category(&mut new_anatomy)?,
+                        "Label" => edit::run_edit_label(&mut new_anatomy)?,
                         "Secret" => new_secret = Some(edit::run_edit_secret()?),
-                        "Tags" => edit::run_edit_tags(&mut new_anatomy, new_tags)?,
+                        "Tags" => edit::run_edit_tags(&mut new_anatomy)?,
                         _ => {}
                     }
                 }

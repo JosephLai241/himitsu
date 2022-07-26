@@ -50,21 +50,15 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, SkeletonsError> {
 }
 
 /// Run the prompt asking for a new category for this secret.
-pub fn run_edit_category(
-    new_category: &Option<String>,
-    new_anatomy: &mut Anatomy,
-) -> Result<(), SkeletonsError> {
+pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
-    let category = match new_category {
-        Some(category) => category.to_string(),
-        None => Text::new("Set a new category for this secret:")
-            .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
-            .with_placeholder("Unclassified")
-            .with_render_config(render_config)
-            .prompt_skippable()?
-            .unwrap_or("Unclassified".to_string()),
-    };
+    let category = Text::new("Set a new category for this secret:")
+        .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
+        .with_placeholder("Unclassified")
+        .with_render_config(render_config)
+        .prompt_skippable()?
+        .unwrap_or("Unclassified".to_string());
 
     new_anatomy.category = category;
 
@@ -72,10 +66,7 @@ pub fn run_edit_category(
 }
 
 /// Run the prompt asking for a new label for this secret.
-pub fn run_edit_label(
-    new_label: &Option<String>,
-    new_anatomy: &mut Anatomy,
-) -> Result<(), SkeletonsError> {
+pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let label_validator: StringValidator = &|input| {
@@ -86,13 +77,10 @@ pub fn run_edit_label(
         }
     };
 
-    let label = match new_label {
-        Some(label) => label.to_string(),
-        None => Text::new("Enter a label for this secret:")
-            .with_render_config(render_config)
-            .with_validator(label_validator)
-            .prompt()?,
-    };
+    let label = Text::new("Enter a label for this secret:")
+        .with_render_config(render_config)
+        .with_validator(label_validator)
+        .prompt()?;
 
     new_anatomy.label = label;
 
@@ -114,23 +102,17 @@ pub fn run_edit_secret() -> Result<String, SkeletonsError> {
 }
 
 /// Run the prompt asking for new tags for this secret.
-pub fn run_edit_tags(
-    new_anatomy: &mut Anatomy,
-    new_tags: &Option<Vec<String>>,
-) -> Result<(), SkeletonsError> {
+pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
-    let tags = match new_tags {
-        Some(tags) => tags.to_owned(),
-        None => Text::new("Set new tags for this secret:")
-            .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
-            .with_render_config(render_config)
-            .prompt_skippable()?
-            .unwrap_or("".to_string())
-            .split(" ")
-            .map(|tag| tag.to_string())
-            .collect()
-    };
+    let tags = Text::new("Set new tags for this secret:")
+        .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
+        .with_render_config(render_config)
+        .prompt_skippable()?
+        .unwrap_or("".to_string())
+        .split(" ")
+        .map(|tag| tag.to_string())
+        .collect();
 
     new_anatomy.tags = tags;
 
