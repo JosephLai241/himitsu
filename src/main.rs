@@ -23,7 +23,7 @@ lazy_static! {
     static ref ASCII_ART: &'static [u8; 1259] = include_bytes!("../art.txt");
 }
 
-/// Run `skeleton`.
+/// Run `himitsu`.
 fn main() {
     let args = Args::parse();
 
