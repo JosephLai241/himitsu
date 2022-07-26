@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use ansi_term::{Color, Style};
+use ansi_term::Color;
 use inquire::{self, Select};
 use serde_json;
 
@@ -20,7 +20,7 @@ pub fn run_select_secret(
     for (painted_label, lookup_match) in found_matches.iter() {
         let option = format!(
                 "{}\n      Created:       {}\n      Last accessed: {}\n      Category:      {}\n      Tags:          {}",
-                Style::new().bold().paint(painted_label.to_string()),
+                painted_label,
                 Color::Green
                     .bold()
                     .paint(format!("{}", lookup_match.anatomy.date_created)),
