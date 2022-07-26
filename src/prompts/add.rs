@@ -2,7 +2,7 @@
 
 use inquire::{self, validator::StringValidator, Password, PasswordDisplayMode, Text};
 
-use crate::errors::SkeletonsError;
+use crate::errors::HimitsuError;
 
 use super::config::{self, ConfigType};
 
@@ -12,7 +12,7 @@ pub fn run_add_secret(
     category: &Option<String>,
     label: &Option<String>,
     tags: &Option<Vec<String>>,
-) -> Result<(String, String, String, Vec<String>), SkeletonsError> {
+) -> Result<(String, String, String, Vec<String>), HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let label_validator: StringValidator = &|input| {

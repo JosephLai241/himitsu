@@ -1,4 +1,4 @@
-//! Contains structs used for `skeletons` metadata.
+//! Contains structs used for `himitsu` metadata.
 
 use std::collections::HashMap;
 

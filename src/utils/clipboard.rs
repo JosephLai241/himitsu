@@ -1,16 +1,16 @@
-//! Contains clipboard utilities for `skeletons`.
+//! Contains clipboard utilities for `himitsu`.
 
 use copypasta::{ClipboardContext, ClipboardProvider};
 
-use crate::errors::SkeletonsError;
+use crate::errors::HimitsuError;
 
 /// Copy the decrypted secret to the system clipboard.
-pub fn set_clipboard(secret_value: String) -> Result<(), SkeletonsError> {
+pub fn set_clipboard(secret_value: String) -> Result<(), HimitsuError> {
     match ClipboardContext::new() {
         Ok(mut context) => context.set_contents(secret_value.to_owned()).map_or_else(
-            |error| Err(SkeletonsError::ClipboardContentsError(error.to_string())),
+            |error| Err(HimitsuError::ClipboardContentsError(error.to_string())),
             Ok,
         ),
-        Err(error) => return Err(SkeletonsError::ClipboardContextError(error.to_string())),
+        Err(error) => return Err(HimitsuError::ClipboardContextError(error.to_string())),
     }
 }

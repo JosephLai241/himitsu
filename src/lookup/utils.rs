@@ -12,18 +12,18 @@ use directories::ProjectDirs;
 use regex::Regex;
 
 use crate::{
-    errors::SkeletonsError,
+    errors::HimitsuError,
     models::{encryption::Encryption, metadata::LookupMatch},
 };
 
 use super::secure::decrypt_lookup_table;
 
 /// Get the lookup table directory path.
-pub fn get_lookup_dir_path() -> Result<PathBuf, SkeletonsError> {
-    match ProjectDirs::from("", "", "skeletons") {
+pub fn get_lookup_dir_path() -> Result<PathBuf, HimitsuError> {
+    match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => Ok(project_directory.data_dir().join("lookup")),
-        None => Err(SkeletonsError::PathError(
-            "Could not get the path to the skeletons application directory!".to_string(),
+        None => Err(HimitsuError::PathError(
+            "Could not get the path to the himitsu application directory!".to_string(),
         )),
     }
 }
@@ -41,7 +41,7 @@ pub enum LookupMode {
 pub fn search_in_lookup_table(
     encryption_data: &Encryption,
     lookup_mode: LookupMode,
-) -> Result<HashMap<String, LookupMatch>, SkeletonsError> {
+) -> Result<HashMap<String, LookupMatch>, HimitsuError> {
     let lookup_table = decrypt_lookup_table(encryption_data)?;
 
     let mut found_matches = HashMap::new();
@@ -89,7 +89,7 @@ pub fn search_in_lookup_table(
 }
 
 /// Get the lookup table's contents from the lookup directory.
-pub fn get_lookup_table() -> Result<Vec<u8>, SkeletonsError> {
+pub fn get_lookup_table() -> Result<Vec<u8>, HimitsuError> {
     let mut lookup_file = File::open(&get_lookup_dir_path()?.join("table"))?;
     let mut lookup_table = Vec::new();
     lookup_file.read_to_end(&mut lookup_table)?;
@@ -98,7 +98,7 @@ pub fn get_lookup_table() -> Result<Vec<u8>, SkeletonsError> {
 }
 
 /// Get the lookup table's nonce from the lookup directory.
-pub fn get_lookup_nonce() -> Result<[u8; 24], SkeletonsError> {
+pub fn get_lookup_nonce() -> Result<[u8; 24], HimitsuError> {
     let mut lookup_file = File::open(&get_lookup_dir_path()?.join("nonce"))?;
     let mut lookup_nonce = [0u8; 24];
     lookup_file.read_exact(&mut lookup_nonce)?;
@@ -107,8 +107,8 @@ pub fn get_lookup_nonce() -> Result<[u8; 24], SkeletonsError> {
 }
 
 /// Remove the hash directory on the local machine.
-pub fn remove_hash_directory(hash_id: &str) -> Result<(), SkeletonsError> {
-    match ProjectDirs::from("", "", "skeletons") {
+pub fn remove_hash_directory(hash_id: &str) -> Result<(), HimitsuError> {
+    match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => {
             let hash_directory = project_directory.data_dir().join("closet").join(hash_id);
 
@@ -116,8 +116,8 @@ pub fn remove_hash_directory(hash_id: &str) -> Result<(), SkeletonsError> {
 
             Ok(())
         }
-        None => Err(SkeletonsError::PathError(
-            "Could not get the path to the skeletons application directory!".to_string(),
+        None => Err(HimitsuError::PathError(
+            "Could not get the path to the himitsu application directory!".to_string(),
         )),
     }
 }

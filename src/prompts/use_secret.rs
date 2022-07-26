@@ -6,14 +6,14 @@ use ansi_term::Color;
 use inquire::{self, Select};
 use serde_json;
 
-use crate::{errors::SkeletonsError, models::metadata::LookupMatch};
+use crate::{errors::HimitsuError, models::metadata::LookupMatch};
 
 use super::config::{self, ConfigType};
 
 /// Run the selection prompt if multiple label matches are found in the lookup table.
 pub fn run_select_secret(
     found_matches: HashMap<String, LookupMatch>,
-) -> Result<LookupMatch, SkeletonsError> {
+) -> Result<LookupMatch, HimitsuError> {
     let mut pairs = HashMap::new();
     let mut options = Vec::new();
 
@@ -54,7 +54,7 @@ pub fn run_select_secret(
 
     match pairs.get(&selection) {
         Some(lookup_match) => Ok(serde_json::from_str(lookup_match)?),
-        None => Err(SkeletonsError::LookupError(
+        None => Err(HimitsuError::LookupError(
             "Could not find a matching hash ID for this secret!".to_string(),
         )),
     }

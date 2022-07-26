@@ -1,4 +1,4 @@
-//! Contains models for `skeleton`.
+//! Contains models for `himitsu`.
 
 pub mod encryption;
 pub mod metadata;

@@ -1,4 +1,4 @@
-//! Contains utilities used throughout `skeleton`.
+//! Contains utilities used throughout `himitsu`.
 
 pub mod clipboard;
 pub mod config;

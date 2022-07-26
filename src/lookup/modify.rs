@@ -3,7 +3,7 @@
 use chrono::Local;
 
 use crate::{
-    errors::SkeletonsError,
+    errors::HimitsuError,
     models::{
         encryption::Encryption,
         metadata::{Anatomy, LookupTable},
@@ -21,7 +21,7 @@ pub fn write_to_lookup_table(
     encryption_data: &Encryption,
     lookup_table: &mut LookupTable,
     secret_hash: &str,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     // TODO | FUTURE:
     //      `HashMap.insert()` returns an `Option`. A return of Some(T) indicates the value at
     //      this key was updated (overwritten).
@@ -37,7 +37,7 @@ pub fn write_to_lookup_table(
 pub fn update_last_accessed(
     encryption_data: &Encryption,
     hash_id: &str,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     let mut lookup_table = decrypt_lookup_table(encryption_data)?;
 
     match lookup_table.table.get_mut(hash_id) {
@@ -48,7 +48,7 @@ pub fn update_last_accessed(
 
             Ok(())
         }
-        None => Err(SkeletonsError::LookupError(
+        None => Err(HimitsuError::LookupError(
             "Could not update 'last_accessed' within this secret's Anatomy!".to_string(),
         )),
     }
@@ -58,7 +58,7 @@ pub fn update_last_accessed(
 pub fn remove_in_lookup_table(
     encryption_data: &Encryption,
     hash_id: &str,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     let mut lookup_table = decrypt_lookup_table(encryption_data)?;
 
     match lookup_table.table.get(hash_id) {
@@ -71,7 +71,7 @@ pub fn remove_in_lookup_table(
 
             Ok(())
         }
-        None => Err(SkeletonsError::LookupError(
+        None => Err(HimitsuError::LookupError(
             "Could not find an existing Anatomy for this secret!".to_string(),
         )),
     }

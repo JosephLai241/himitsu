@@ -1,6 +1,6 @@
 //! Contains the execution flow for authentication.
 
-use crate::{authentication, errors::SkeletonsError, models::encryption::Encryption};
+use crate::{authentication, errors::HimitsuError, models::encryption::Encryption};
 
 use ansi_term::Color;
 use inquire::{self, Password, PasswordDisplayMode};
@@ -9,7 +9,7 @@ use spinners::{Spinner, Spinners};
 use super::config::{self, ConfigType};
 
 /// Run the authentication prompt.
-pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), SkeletonsError> {
+pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), HimitsuError> {
     let mut validated = false;
     let mut try_count = 0;
 
@@ -63,12 +63,12 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), Skeletons
                     }
                 }
             }
-            None => return Err(SkeletonsError::FailedToLogin),
+            None => return Err(HimitsuError::FailedToLogin),
         }
     }
 
     if !validated {
-        return Err(SkeletonsError::FailedToLogin);
+        return Err(HimitsuError::FailedToLogin);
     }
 
     Ok(())

@@ -11,7 +11,7 @@ use std::{io, string::FromUtf8Error};
 
 /// Contains variants for errors that may be raised throughout this program.
 #[derive(Debug, Error)]
-pub enum SkeletonsError {
+pub enum HimitsuError {
     /// An error occurred while attempting to access application-specific directories.
     #[error("Could not access system application directories!")]
     ApplicationError,

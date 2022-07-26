@@ -6,14 +6,14 @@ edition = "2021"
 homepage = ""
 keywords = ["encrypt", "config", "secret", "token", "vault"]
 license = "MIT"
-name = "skeletons"
+name = "himitsu"
 readme = "README.md"
 repository = ""
 version = "1.0.0"
 
-#[[bin]]
-#name = "skeletons"
-#path = "src/main.rs"
+[[bin]]
+name = "himitsu"
+path = "src/main.rs"
 
 [dependencies]
 ansi_term = "0.12.1"

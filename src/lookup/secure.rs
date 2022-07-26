@@ -8,7 +8,7 @@ use chacha20poly1305::{
 };
 
 use crate::{
-    errors::SkeletonsError,
+    errors::HimitsuError,
     models::{encryption::Encryption, metadata::LookupTable},
 };
 
@@ -18,7 +18,7 @@ use super::utils::{get_lookup_dir_path, get_lookup_nonce, get_lookup_table};
 pub fn encrypt_lookup_table(
     encryption_data: &Encryption,
     updated_lookup: &mut LookupTable,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     let lookup_table_path = get_lookup_dir_path()?.join("table");
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&encryption_data.password_hash));
@@ -29,19 +29,19 @@ pub fn encrypt_lookup_table(
     match cipher.encrypt(nonce, serde_json::to_string(updated_lookup)?.as_bytes()) {
         Ok(encrypted_lookup_table) => {
             if let Err(error) = fs::write(lookup_table_path, encrypted_lookup_table) {
-                return Err(SkeletonsError::StoreLookupTableError(error.to_string()));
+                return Err(HimitsuError::StoreLookupTableError(error.to_string()));
             }
 
             Ok(())
         }
-        Err(error) => Err(SkeletonsError::AEADEncryptionError(format!(
+        Err(error) => Err(HimitsuError::AEADEncryptionError(format!(
             "Lookup table encryption error: {error}"
         ))),
     }
 }
 
 /// Decrypt the lookup table and return its contents.
-pub fn decrypt_lookup_table(encryption_data: &Encryption) -> Result<LookupTable, SkeletonsError> {
+pub fn decrypt_lookup_table(encryption_data: &Encryption) -> Result<LookupTable, HimitsuError> {
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&encryption_data.password_hash));
 
     let lookup_nonce = get_lookup_nonce()?;
@@ -52,9 +52,9 @@ pub fn decrypt_lookup_table(encryption_data: &Encryption) -> Result<LookupTable,
     match cipher.decrypt(nonce, raw_lookup_data) {
         Ok(data) => match String::from_utf8(data) {
             Ok(stringified_data) => Ok(serde_json::from_str(&stringified_data)?),
-            Err(error) => Err(SkeletonsError::FromUtf8Error(error)),
+            Err(error) => Err(HimitsuError::FromUtf8Error(error)),
         },
-        Err(error) => Err(SkeletonsError::AEADDencryptionError(format!(
+        Err(error) => Err(HimitsuError::AEADDencryptionError(format!(
             "Lookup table decryption error: {}",
             error.to_string()
         ))),

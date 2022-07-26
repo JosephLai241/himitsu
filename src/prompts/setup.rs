@@ -14,7 +14,7 @@ use spinners::{Spinner, Spinners};
 
 use crate::{
     authentication,
-    errors::SkeletonsError,
+    errors::HimitsuError,
     lookup::utils,
     models::{encryption::Encryption, metadata::LookupTable},
     utils::config,
@@ -23,7 +23,7 @@ use crate::{
 use super::config::{get_inquire_config, ConfigType};
 
 /// Run the initial setup's prompt - set a master password to unlock the vault.
-pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
+pub fn run_initial_setup_prompts() -> Result<Encryption, HimitsuError> {
     let password_validator: StringValidator = &|input| {
         if input.chars().count() < 10 {
             Err("The password must have at least 10 characters!".to_string())
@@ -62,7 +62,7 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, SkeletonsError> {
 }
 
 /// Generate a new salt and password hash.
-fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, SkeletonsError> {
+fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, HimitsuError> {
     let mut salt = [0u8; 32];
     OsRng.fill_bytes(&mut salt);
 
@@ -74,7 +74,7 @@ fn generate_salt_and_password_hash(password: &str) -> Result<Encryption, Skeleto
 
 /// Create a new lookup table and nonce, then write the two values to a file in the `lookup`
 /// directory.
-fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), SkeletonsError> {
+fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), HimitsuError> {
     let lookup_dir_path = utils::get_lookup_dir_path()?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&encryption_data.password_hash));
@@ -96,17 +96,17 @@ fn create_lookup_table_and_nonce(encryption_data: &Encryption) -> Result<(), Ske
             }
 
             if let Err(error) = fs::write(lookup_dir_path.join("nonce"), lookup_nonce) {
-                return Err(SkeletonsError::StoreNonceError(format!(
+                return Err(HimitsuError::StoreNonceError(format!(
                     "Lookup table nonce: {error}"
                 )));
             }
             if let Err(error) = fs::write(lookup_dir_path.join("table"), encrypted_lookup_table) {
-                return Err(SkeletonsError::StoreLookupTableError(error.to_string()));
+                return Err(HimitsuError::StoreLookupTableError(error.to_string()));
             }
 
             Ok(())
         }
-        Err(error) => Err(SkeletonsError::AEADEncryptionError(format!(
+        Err(error) => Err(HimitsuError::AEADEncryptionError(format!(
             "Lookup table encryption error: {error}"
         ))),
     }

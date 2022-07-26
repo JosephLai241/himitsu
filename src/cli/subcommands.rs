@@ -1,4 +1,4 @@
-//! Contains subcommands for `skeletons`.
+//! Contains subcommands for `himitsu`.
 
 use ansi_term::Color;
 use clap::Subcommand;
@@ -8,7 +8,7 @@ use crate::{
         decrypt::{self, DecryptionMode},
         encrypt,
     },
-    errors::SkeletonsError,
+    errors::HimitsuError,
     lookup::{
         modify,
         utils::{self as lookup_utils, LookupMode},
@@ -17,7 +17,7 @@ use crate::{
     prompts::{add, edit, use_secret, utils},
 };
 
-/// Contains subcommands for `skeletons`.
+/// Contains subcommands for `himitsu`.
 #[derive(Debug, Subcommand)]
 pub enum SubCommands {
     /// Add a new secret.
@@ -59,7 +59,7 @@ pub enum SubCommands {
 pub fn run_subcommands(
     encryption_data: &Encryption,
     subcommand: &SubCommands,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     match subcommand {
         SubCommands::Add {
             category,

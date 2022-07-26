@@ -2,12 +2,12 @@
 
 use inquire::{validator::StringValidator, Confirm, Text};
 
-use crate::errors::SkeletonsError;
+use crate::errors::HimitsuError;
 
 use super::config::{self, ConfigType};
 
 /// Runs the prompt to get the label of the secret the user wants to access.
-pub fn run_get_label(label: &Option<String>) -> Result<String, SkeletonsError> {
+pub fn run_get_label(label: &Option<String>) -> Result<String, HimitsuError> {
     let label_validator: StringValidator = &|input| {
         if input.is_empty() {
             Err("A label is required!".to_string())
@@ -28,7 +28,7 @@ pub fn run_get_label(label: &Option<String>) -> Result<String, SkeletonsError> {
 }
 
 /// Run a confirmation prompt with a message.
-pub fn run_confirmation_prompt(message: &str) -> Result<bool, SkeletonsError> {
+pub fn run_confirmation_prompt(message: &str) -> Result<bool, HimitsuError> {
     Ok(
         //Confirm::new("No matches were found. List all stored secrets?")
         Confirm::new(message)

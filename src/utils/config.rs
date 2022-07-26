@@ -8,11 +8,11 @@ use std::{
 use directories::ProjectDirs;
 use serde_json;
 
-use crate::{errors::SkeletonsError, models::encryption::Encryption};
+use crate::{errors::HimitsuError, models::encryption::Encryption};
 
 /// Retrieve the stored encryption data if the `crypt.json` file exists.
-pub fn get_encryption_values() -> Result<Option<Encryption>, SkeletonsError> {
-    match ProjectDirs::from("", "", "skeletons") {
+pub fn get_encryption_values() -> Result<Option<Encryption>, HimitsuError> {
+    match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => {
             let crypt_json_path = project_directory.config_dir().join("crypt.json");
 
@@ -25,8 +25,8 @@ pub fn get_encryption_values() -> Result<Option<Encryption>, SkeletonsError> {
                         return Ok(None);
                     }
                     None => {
-                        return Err(SkeletonsError::PathError(
-                            "Could not get the path to the skeletons application directory!"
+                        return Err(HimitsuError::PathError(
+                            "Could not get the path to the himitsu application directory!"
                                 .to_string(),
                         ))
                     }
@@ -45,18 +45,18 @@ pub fn get_encryption_values() -> Result<Option<Encryption>, SkeletonsError> {
                 Ok(None)
             }
         }
-        None => Err(SkeletonsError::ApplicationError),
+        None => Err(HimitsuError::ApplicationError),
     }
 }
 
 /// Get a `File` handle to the `crypt.json` file.
-pub fn get_crypt_json() -> Result<File, SkeletonsError> {
-    match ProjectDirs::from("", "", "skeletons") {
+pub fn get_crypt_json() -> Result<File, HimitsuError> {
+    match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => {
             let crypt_json_path = project_directory.config_dir().join("crypt.json");
 
             Ok(File::create(crypt_json_path)?)
         }
-        None => Err(SkeletonsError::ApplicationError),
+        None => Err(HimitsuError::ApplicationError),
     }
 }

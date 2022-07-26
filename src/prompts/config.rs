@@ -1,4 +1,4 @@
-//! Contains the configurations for prompts used throughout `skeletons`.
+//! Contains the configurations for prompts used throughout `himitsu`.
 
 use inquire::ui::{Attributes, Color, RenderConfig, StyleSheet, Styled};
 

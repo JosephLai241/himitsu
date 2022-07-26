@@ -1,4 +1,4 @@
-//! Contains decryption functions for `skeletons`.
+//! Contains decryption functions for `himitsu`.
 
 use std::{fs::File, io::Read, path::PathBuf};
 
@@ -12,7 +12,7 @@ use directories::ProjectDirs;
 use spinners::{Spinner, Spinners};
 
 use crate::{
-    authentication, errors::SkeletonsError, models::encryption::Encryption,
+    authentication, errors::HimitsuError, models::encryption::Encryption,
     utils::clipboard::set_clipboard,
 };
 
@@ -29,7 +29,7 @@ pub fn decrypt_secret(
     decryption_mode: DecryptionMode,
     encryption_data: &Encryption,
     hash_id: &str,
-) -> Result<Option<String>, SkeletonsError> {
+) -> Result<Option<String>, HimitsuError> {
     let mut decryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Decrypting the secret...".into());
 
@@ -86,7 +86,7 @@ pub fn decrypt_secret(
                     .paint("SECRET DECRYPTION FAILED!".to_string())
                     .to_string(),
             );
-            Err(SkeletonsError::AEADDencryptionError(format!(
+            Err(HimitsuError::AEADDencryptionError(format!(
                 "Secret decryption error: {}",
                 error.to_string()
             )))
@@ -95,17 +95,17 @@ pub fn decrypt_secret(
 }
 
 /// Get the secret's SHA256 hash directory path.
-fn get_secret_hash_path(hash_id: &str) -> Result<PathBuf, SkeletonsError> {
-    match ProjectDirs::from("", "", "skeletons") {
+fn get_secret_hash_path(hash_id: &str) -> Result<PathBuf, HimitsuError> {
+    match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => Ok(project_directory.data_dir().join("closet").join(hash_id)),
-        None => Err(SkeletonsError::PathError(
-            "Could not get the path to the skeletons application directory!".to_string(),
+        None => Err(HimitsuError::PathError(
+            "Could not get the path to the himitsu application directory!".to_string(),
         )),
     }
 }
 
 /// Get the secret's encrypted nonce value.
-fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], SkeletonsError> {
+fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], HimitsuError> {
     let mut nonce_file = File::open(hash_path.join("nonce"))?;
     let mut raw_nonce = [0u8; 24];
     nonce_file.read_exact(&mut raw_nonce)?;
@@ -114,7 +114,7 @@ fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], SkeletonsError> {
 }
 
 /// Get the encrypted secret itself.
-fn get_secret(hash_path: &PathBuf) -> Result<Vec<u8>, SkeletonsError> {
+fn get_secret(hash_path: &PathBuf) -> Result<Vec<u8>, HimitsuError> {
     let mut secret_file = File::open(hash_path.join("skeleton"))?;
     let mut encrypted_secret = Vec::new();
     secret_file.read_to_end(&mut encrypted_secret)?;

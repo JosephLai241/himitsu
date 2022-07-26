@@ -6,12 +6,12 @@ use inquire::{
     MultiSelect, Password, PasswordDisplayMode, Text,
 };
 
-use crate::{errors::SkeletonsError, models::metadata::Anatomy};
+use crate::{errors::HimitsuError, models::metadata::Anatomy};
 
 use super::config::{self, ConfigType};
 
 /// Run the prompts asking which secret attributes to edit.
-pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, SkeletonsError> {
+pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let answer_formatter: MultiOptionFormatter<&str> = &|selections| {
@@ -50,7 +50,7 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, SkeletonsError> {
 }
 
 /// Run the prompt asking for a new category for this secret.
-pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
+pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let category = Text::new("Set a new category for this secret:")
@@ -66,7 +66,7 @@ pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError
 }
 
 /// Run the prompt asking for a new label for this secret.
-pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
+pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let label_validator: StringValidator = &|input| {
@@ -88,7 +88,7 @@ pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
 }
 
 /// Run the prompt asking for a new secret.
-pub fn run_edit_secret() -> Result<String, SkeletonsError> {
+pub fn run_edit_secret() -> Result<String, HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let secret = Password::new("Enter your new secret:")
@@ -102,7 +102,7 @@ pub fn run_edit_secret() -> Result<String, SkeletonsError> {
 }
 
 /// Run the prompt asking for new tags for this secret.
-pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), SkeletonsError> {
+pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
     let render_config = config::get_inquire_config(ConfigType::Standard);
 
     let tags = Text::new("Set new tags for this secret:")

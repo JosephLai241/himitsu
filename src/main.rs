@@ -1,15 +1,16 @@
-//! `skeletons` - An encrypted CLI tool for managing secret on your machine.
+//! `himitsu` - An encrypted CLI tool for managing secret on your machine.
 
 mod authentication;
 mod cli;
 mod encryption;
 mod errors;
+mod lookup;
 mod models;
 mod prompts;
 mod utils;
 
 use cli::{subcommands, Args};
-use errors::SkeletonsError;
+use errors::HimitsuError;
 use prompts::{authenticate, setup};
 use utils::{config, paint};
 
@@ -18,8 +19,8 @@ use clap::Parser;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    /// ASCII art for `skeletons`.
-    static ref ASCII_ART: &'static [u8; 1424] = include_bytes!("../art.txt");
+    /// ASCII art for `himitsu`.
+    static ref ASCII_ART: &'static [u8; 1259] = include_bytes!("../art.txt");
 }
 
 /// Run `skeleton`.
@@ -44,6 +45,9 @@ fn main() {
                             {
                                 paint::paint_error(error);
                             }
+                        } else {
+                            // TODO: IMPLEMENT TUI FOR SECRETS.
+                            unimplemented!()
                         }
                     }
                 }
@@ -56,14 +60,22 @@ fn main() {
                         Ok(crypt_json) => match crypt_json {
                             Some(encryption_values) => {
                                 if let Some(subcommand) = &args.subcommand {
+                                    // TODO:
+                                    //      UPDATE THIS TO CHECK WHICH SUBCOMMAND IS CALLED. IF
+                                    //      CALLED ANYTHING OTHER THAN THE "ADD" SUBCOMMAND, PRINT A
+                                    //      WARNING SAYING YOU NEED TO ADD SHIT BEFORE YOU CAN USE IT
+                                    //      AND EXIT OUT.
                                     if let Err(error) =
                                         subcommands::run_subcommands(&encryption_values, subcommand)
                                     {
                                         paint::paint_error(error);
                                     }
+                                } else {
+                                    // TODO: IMPLEMENT TUI FOR SECRETS.
+                                    unimplemented!()
                                 }
                             }
-                            None => paint::paint_error(SkeletonsError::ApplicationError),
+                            None => paint::paint_error(HimitsuError::ApplicationError),
                         },
                         Err(error) => paint::paint_error(error),
                     }

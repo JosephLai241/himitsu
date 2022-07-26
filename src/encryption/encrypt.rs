@@ -1,4 +1,4 @@
-//! Contains encryption functions for `skeletons`.
+//! Contains encryption functions for `himitsu`.
 
 use ansi_term::Color;
 use chacha20poly1305::{
@@ -12,7 +12,7 @@ use spinners::{Spinner, Spinners};
 
 use crate::{
     authentication,
-    errors::SkeletonsError,
+    errors::HimitsuError,
     lookup::{modify, secure},
     models::{encryption::Encryption, metadata::Anatomy},
     utils::store,
@@ -23,7 +23,7 @@ pub fn encrypt_secret(
     anatomy: &Anatomy,
     encryption_data: &Encryption,
     secret: String,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     let mut encryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Encrypting your secret...".into());
 
@@ -65,7 +65,7 @@ pub fn encrypt_secret(
                     .to_string(),
             );
 
-            Err(SkeletonsError::AEADEncryptionError(error.to_string()))
+            Err(HimitsuError::AEADEncryptionError(error.to_string()))
         }
     }
 }
@@ -95,7 +95,7 @@ fn update_lookup_table(
     ciphertext: Vec<u8>,
     encryption_data: &Encryption,
     nonce: &GenericArray<u8, U24>,
-) -> Result<(), SkeletonsError> {
+) -> Result<(), HimitsuError> {
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
 
     let secret_hash = generate_sha256_hash(&anatomy, &ciphertext, nonce);

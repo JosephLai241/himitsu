@@ -1,4 +1,4 @@
-//! Contains prompts for `skeletons`.
+//! Contains prompts for `himitsu`.
 
 pub mod add;
 pub mod authenticate;
