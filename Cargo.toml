@@ -1,5 +1,5 @@
 [package]
-author = "Joseph Lai <joseph.lai241@protonmail.com>"
+authors = ["Joseph Lai <joseph.lai241@protonmail.com>"]
 categories = ["authentication", "command-line-utilities", "config", "cryptography", "development-tools"]
 description = "An encrypted CLI tool for managing secrets on your machine"
 edition = "2021"
