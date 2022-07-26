@@ -3,12 +3,12 @@ authors = ["Joseph Lai <joseph.lai241@protonmail.com>"]
 categories = ["authentication", "command-line-utilities", "config", "cryptography", "development-tools"]
 description = "An encrypted CLI tool for managing secrets on your machine"
 edition = "2021"
-homepage = ""
+homepage = "https://github.com/JosephLai241/himitsu"
 keywords = ["encrypt", "config", "secret", "token", "vault"]
 license = "MIT"
 name = "himitsu"
 readme = "README.md"
-repository = ""
+repository = "https://github.com/JosephLai241/himitsu"
 version = "1.0.0"
 
 [[bin]]
