@@ -1,4 +1,4 @@
-//! Config utilities for `skeleton`.
+//! Config utilities for `himitsu`.
 
 use std::{
     fs::{self, File},

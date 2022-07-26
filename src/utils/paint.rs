@@ -1,4 +1,4 @@
-//! Contains text painting utilities for `skeleton`.
+//! Contains text painting utilities for `himitsu`.
 
 use ansi_term::Color;
 
