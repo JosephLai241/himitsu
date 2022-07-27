@@ -19,6 +19,7 @@ pub fn run_get_label(label: &Option<String>) -> Result<String, HimitsuError> {
     let label = match label {
         Some(label_value) => label_value.to_owned(),
         None => Text::new("Enter the label of the secret you want to access:")
+            .with_help_message("Also accepts Regex expressions")
             .with_render_config(config::get_inquire_config(ConfigType::Standard))
             .with_validator(label_validator)
             .prompt()?,
@@ -29,11 +30,8 @@ pub fn run_get_label(label: &Option<String>) -> Result<String, HimitsuError> {
 
 /// Run a confirmation prompt with a message.
 pub fn run_confirmation_prompt(message: &str) -> Result<bool, HimitsuError> {
-    Ok(
-        //Confirm::new("No matches were found. List all stored secrets?")
-        Confirm::new(message)
-            .with_default(true)
-            .with_render_config(config::get_inquire_config(ConfigType::Confirm))
-            .prompt()?,
-    )
+    Ok(Confirm::new(message)
+        .with_default(true)
+        .with_render_config(config::get_inquire_config(ConfigType::Confirm))
+        .prompt()?)
 }
