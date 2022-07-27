@@ -14,29 +14,27 @@ use crate::{
     authentication,
     errors::HimitsuError,
     lookup::{modify, secure},
-    models::{encryption::Encryption, metadata::Anatomy},
+    models::metadata::Anatomy,
     utils::store,
 };
 
 /// Store the encrypted secret.
 pub fn encrypt_secret(
     anatomy: &Anatomy,
-    encryption_data: &Encryption,
+    password: &str,
     secret: String,
 ) -> Result<(), HimitsuError> {
     let mut encryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Encrypting your secret...".into());
 
+    let mut salt = [0u8; 32];
     let mut secret_nonce = [0u8; 24];
+    OsRng.fill_bytes(&mut salt);
     OsRng.fill_bytes(&mut secret_nonce);
 
     // Generate a new hash for this particular secret.
     let argon2_config = authentication::get_argon2_config();
-    let key = argon2::hash_raw(
-        &encryption_data.password_hash,
-        &encryption_data.salt,
-        &argon2_config,
-    )?;
+    let key = argon2::hash_raw(password.as_bytes(), &salt, &argon2_config)?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&key));
 
@@ -52,7 +50,7 @@ pub fn encrypt_secret(
                     .to_string(),
             );
 
-            update_lookup_table(anatomy, ciphertext, encryption_data, nonce)?;
+            update_lookup_table(anatomy, ciphertext, nonce, password, salt)?;
 
             Ok(())
         }
@@ -93,23 +91,24 @@ fn generate_sha256_hash(
 fn update_lookup_table(
     anatomy: &Anatomy,
     ciphertext: Vec<u8>,
-    encryption_data: &Encryption,
     nonce: &GenericArray<u8, U24>,
+    password: &str,
+    salt: [u8; 32],
 ) -> Result<(), HimitsuError> {
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
 
     let secret_hash = generate_sha256_hash(&anatomy, &ciphertext, nonce);
 
-    let mut lookup_table = secure::decrypt_lookup_table(&encryption_data)?;
+    let mut lookup_table = secure::decrypt_lookup_table(password)?;
 
     modify::write_to_lookup_table(
         anatomy.to_owned(),
-        encryption_data,
         &mut lookup_table,
+        password,
         &secret_hash,
     )?;
 
-    store::store_secret(ciphertext, nonce, &secret_hash)?;
+    store::store_secret(ciphertext, nonce, salt, &secret_hash)?;
 
     write_spinner.stop_and_persist(
         "🔒",

@@ -11,10 +11,7 @@ use chacha20poly1305::{
 use directories::ProjectDirs;
 use spinners::{Spinner, Spinners};
 
-use crate::{
-    authentication, errors::HimitsuError, models::encryption::Encryption,
-    utils::clipboard::set_clipboard,
-};
+use crate::{authentication, errors::HimitsuError, utils::clipboard};
 
 /// This enum contains variants for what should be done with the decrypted secret.
 pub enum DecryptionMode {
@@ -27,25 +24,22 @@ pub enum DecryptionMode {
 /// Decrypt a secret based on its SHA256 hash ID and copy it to the system clipboard.
 pub fn decrypt_secret(
     decryption_mode: DecryptionMode,
-    encryption_data: &Encryption,
     hash_id: &str,
+    password: &str,
 ) -> Result<Option<String>, HimitsuError> {
     let mut decryption_spinner =
         Spinner::new(Spinners::Aesthetic, "Decrypting the secret...".into());
 
     let hash_path = get_secret_hash_path(hash_id)?;
 
+    let salt = get_secret_salt(&hash_path)?;
     let raw_nonce = get_secret_nonce(&hash_path)?;
     let nonce = XNonce::from_slice(&raw_nonce);
 
     let encrypted_secret = &get_secret(&hash_path)?[..];
 
     let argon2_config = authentication::get_argon2_config();
-    let key = argon2::hash_raw(
-        &encryption_data.password_hash,
-        &encryption_data.salt,
-        &argon2_config,
-    )?;
+    let key = argon2::hash_raw(&password.as_bytes(), &salt, &argon2_config)?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&key));
 
@@ -63,7 +57,7 @@ pub fn decrypt_secret(
 
             match decryption_mode {
                 DecryptionMode::EditSecret => Ok(Some(secret)),
-                DecryptionMode::UseSecret => match set_clipboard(secret) {
+                DecryptionMode::UseSecret => match clipboard::set_clipboard(secret) {
                     Ok(()) => {
                         println!(
                             "{}",
@@ -104,13 +98,22 @@ fn get_secret_hash_path(hash_id: &str) -> Result<PathBuf, HimitsuError> {
     }
 }
 
-/// Get the secret's encrypted nonce value.
+/// Get the secret's nonce value.
 fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], HimitsuError> {
     let mut nonce_file = File::open(hash_path.join("nonce"))?;
     let mut raw_nonce = [0u8; 24];
     nonce_file.read_exact(&mut raw_nonce)?;
 
     Ok(raw_nonce)
+}
+
+/// Get the secret's salt value.
+fn get_secret_salt(hash_path: &PathBuf) -> Result<[u8; 32], HimitsuError> {
+    let mut nonce_file = File::open(hash_path.join("salt"))?;
+    let mut salt = [0u8; 32];
+    nonce_file.read_exact(&mut salt)?;
+
+    Ok(salt)
 }
 
 /// Get the encrypted secret itself.
