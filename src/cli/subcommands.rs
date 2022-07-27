@@ -37,19 +37,19 @@ pub enum SubCommands {
     },
     /// Edit an existing secret (search by label).
     Edit {
-        /// The label corresponding to the secret.
+        /// The label corresponding to the secret (supports Regex expressions).
         #[clap(value_parser)]
         label: Option<String>,
     },
     /// Remove an existing secret (search by label).
     Remove {
-        /// The label corresponding to the secret.
+        /// The label corresponding to the secret (supports Regex expressions).
         #[clap(value_parser)]
         label: Option<String>,
     },
     /// Use a stored secret (search by label).
     Use {
-        /// The label corresponding to the secret.
+        /// The label corresponding to the secret (supports Regex expressions).
         #[clap(value_parser)]
         label: Option<String>,
     },
