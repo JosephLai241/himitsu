@@ -11,10 +11,7 @@ use ansi_term::{Color, Style};
 use directories::ProjectDirs;
 use regex::Regex;
 
-use crate::{
-    errors::HimitsuError,
-    models::{encryption::Encryption, metadata::LookupMatch},
-};
+use crate::{errors::HimitsuError, models::metadata::LookupMatch};
 
 use super::secure::decrypt_lookup_table;
 
@@ -39,10 +36,10 @@ pub enum LookupMode {
 /// Search for a label within the lookup table or return all secrets within the lookup table
 /// depending on the `LookupMode`.
 pub fn search_in_lookup_table(
-    encryption_data: &Encryption,
     lookup_mode: LookupMode,
+    password: &str,
 ) -> Result<HashMap<String, LookupMatch>, HimitsuError> {
-    let lookup_table = decrypt_lookup_table(encryption_data)?;
+    let lookup_table = decrypt_lookup_table(password)?;
 
     let mut found_matches = HashMap::new();
 
@@ -95,6 +92,15 @@ pub fn get_lookup_table() -> Result<Vec<u8>, HimitsuError> {
     lookup_file.read_to_end(&mut lookup_table)?;
 
     Ok(lookup_table)
+}
+
+/// Get the lookup table's salt from the lookup directory.
+pub fn get_lookup_salt() -> Result<[u8; 32], HimitsuError> {
+    let mut lookup_file = File::open(&get_lookup_dir_path()?.join("salt"))?;
+    let mut lookup_salt = [0u8; 32];
+    lookup_file.read_exact(&mut lookup_salt)?;
+
+    Ok(lookup_salt)
 }
 
 /// Get the lookup table's nonce from the lookup directory.
