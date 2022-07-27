@@ -11,6 +11,7 @@ use crate::errors::HimitsuError;
 pub fn store_secret(
     ciphertext: Vec<u8>,
     nonce: &GenericArray<u8, U24>,
+    salt: [u8; 32],
     secret_hash: &str,
 ) -> Result<(), HimitsuError> {
     match ProjectDirs::from("", "", "himitsu") {
@@ -24,6 +25,9 @@ pub fn store_secret(
 
             if let Err(error) = fs::write(closet_path.join("skeleton"), ciphertext) {
                 return Err(HimitsuError::StoreSecretError(error.to_string()));
+            }
+            if let Err(error) = fs::write(closet_path.join("salt"), salt) {
+                return Err(HimitsuError::StoreSaltError(error.to_string()));
             }
             if let Err(error) = fs::write(closet_path.join("nonce"), nonce) {
                 return Err(HimitsuError::StoreNonceError(error.to_string()));
