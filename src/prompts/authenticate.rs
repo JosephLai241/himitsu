@@ -9,11 +9,10 @@ use spinners::{Spinner, Spinners};
 use super::config::{self, ConfigType};
 
 /// Run the authentication prompt.
-pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), HimitsuError> {
-    let mut validated = false;
+pub fn authenticate_user(encryption_values: &Encryption) -> Result<String, HimitsuError> {
     let mut try_count = 0;
 
-    while !validated && try_count < 3 {
+    while try_count < 3 {
         let password = Password::new("Enter the password:")
             .with_display_mode(PasswordDisplayMode::Hidden)
             .with_display_toggle_enabled()
@@ -59,7 +58,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), HimitsuEr
                             format!("{}", Color::Green.bold().paint("Success.")),
                         );
 
-                        validated = true;
+                        return Ok(input);
                     }
                 }
             }
@@ -67,9 +66,5 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<(), HimitsuEr
         }
     }
 
-    if !validated {
-        return Err(HimitsuError::FailedToLogin);
-    }
-
-    Ok(())
+    return Err(HimitsuError::FailedToLogin);
 }
