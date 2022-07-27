@@ -13,7 +13,7 @@ use crate::{
         modify,
         utils::{self as lookup_utils, LookupMode},
     },
-    models::{encryption::Encryption, metadata::Anatomy},
+    models::metadata::Anatomy,
     prompts::{add, edit, use_secret, utils},
 };
 
@@ -56,10 +56,7 @@ pub enum SubCommands {
 }
 
 /// Execution blocks for this program's subcommands.
-pub fn run_subcommands(
-    encryption_data: &Encryption,
-    subcommand: &SubCommands,
-) -> Result<(), HimitsuError> {
+pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), HimitsuError> {
     match subcommand {
         SubCommands::Add {
             category,
@@ -69,12 +66,12 @@ pub fn run_subcommands(
             let (label, secret, category, tags) = add::run_add_secret(category, label, tags)?;
             let anatomy = Anatomy::create_from(category, label, tags);
 
-            encrypt::encrypt_secret(&anatomy, encryption_data, secret)?;
+            encrypt::encrypt_secret(&anatomy, password, secret)?;
         }
         SubCommands::Edit { label } => {
             let label = utils::run_get_label(label)?;
             let found_matches =
-                lookup_utils::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
+                lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
 
             if found_matches.is_empty() {
                 let list_all_secrets = utils::run_confirmation_prompt(
@@ -83,13 +80,13 @@ pub fn run_subcommands(
 
                 if list_all_secrets {
                     let found_matches =
-                        lookup_utils::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+                        lookup_utils::search_in_lookup_table(LookupMode::GetAll, password)?;
 
                     let lookup_match = use_secret::run_select_secret(found_matches)?;
                     let secret = decrypt::decrypt_secret(
                         DecryptionMode::EditSecret,
-                        encryption_data,
                         &lookup_match.hash,
+                        password,
                     )?
                     .unwrap();
 
@@ -108,13 +105,9 @@ pub fn run_subcommands(
                         }
                     }
 
-                    modify::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                    modify::remove_in_lookup_table(&lookup_match.hash, password)?;
 
-                    encrypt::encrypt_secret(
-                        &new_anatomy,
-                        encryption_data,
-                        new_secret.unwrap_or(secret),
-                    )?;
+                    encrypt::encrypt_secret(&new_anatomy, password, new_secret.unwrap_or(secret))?;
                 } else {
                     println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                 }
@@ -122,8 +115,8 @@ pub fn run_subcommands(
                 let lookup_match = use_secret::run_select_secret(found_matches)?;
                 let secret = decrypt::decrypt_secret(
                     DecryptionMode::EditSecret,
-                    encryption_data,
                     &lookup_match.hash,
+                    password,
                 )?
                 .unwrap();
 
@@ -142,19 +135,15 @@ pub fn run_subcommands(
                     }
                 }
 
-                modify::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                modify::remove_in_lookup_table(&lookup_match.hash, password)?;
 
-                encrypt::encrypt_secret(
-                    &new_anatomy,
-                    encryption_data,
-                    new_secret.unwrap_or(secret),
-                )?;
+                encrypt::encrypt_secret(&new_anatomy, password, new_secret.unwrap_or(secret))?;
             }
         }
         SubCommands::Remove { label } => {
             let label = utils::run_get_label(label)?;
             let found_matches =
-                lookup_utils::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
+                lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
 
             if found_matches.is_empty() {
                 let list_all_secrets = utils::run_confirmation_prompt(
@@ -163,14 +152,14 @@ pub fn run_subcommands(
 
                 if list_all_secrets {
                     let found_matches =
-                        lookup_utils::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+                        lookup_utils::search_in_lookup_table(LookupMode::GetAll, password)?;
 
                     let lookup_match = use_secret::run_select_secret(found_matches)?;
 
                     if utils::run_confirmation_prompt(
                         "Are you sure you want to permanently delete the selected secret?",
                     )? {
-                        modify::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                        modify::remove_in_lookup_table(&lookup_match.hash, password)?;
                     } else {
                         println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                     }
@@ -183,7 +172,7 @@ pub fn run_subcommands(
                 if utils::run_confirmation_prompt(
                     "Are you sure you want to permanently delete the selected secret?",
                 )? {
-                    modify::remove_in_lookup_table(encryption_data, &lookup_match.hash)?;
+                    modify::remove_in_lookup_table(&lookup_match.hash, password)?;
                 } else {
                     println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                 }
@@ -192,7 +181,7 @@ pub fn run_subcommands(
         SubCommands::Use { label } => {
             let label = utils::run_get_label(label)?;
             let found_matches =
-                lookup_utils::search_in_lookup_table(encryption_data, LookupMode::Search(label))?;
+                lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
 
             if found_matches.is_empty() {
                 let list_all_secrets = utils::run_confirmation_prompt(
@@ -201,16 +190,16 @@ pub fn run_subcommands(
 
                 if list_all_secrets {
                     let found_matches =
-                        lookup_utils::search_in_lookup_table(encryption_data, LookupMode::GetAll)?;
+                        lookup_utils::search_in_lookup_table(LookupMode::GetAll, password)?;
 
                     let lookup_match = use_secret::run_select_secret(found_matches)?;
 
-                    modify::update_last_accessed(encryption_data, &lookup_match.hash)?;
+                    modify::update_last_accessed(&lookup_match.hash, password)?;
 
                     let _ = decrypt::decrypt_secret(
                         DecryptionMode::UseSecret,
-                        encryption_data,
                         &lookup_match.hash,
+                        password,
                     )?;
                 } else {
                     println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
@@ -218,12 +207,12 @@ pub fn run_subcommands(
             } else {
                 let lookup_match = use_secret::run_select_secret(found_matches)?;
 
-                modify::update_last_accessed(encryption_data, &lookup_match.hash)?;
+                modify::update_last_accessed(&lookup_match.hash, password)?;
 
                 let _ = decrypt::decrypt_secret(
                     DecryptionMode::UseSecret,
-                    encryption_data,
                     &lookup_match.hash,
+                    password,
                 )?;
             }
         }
