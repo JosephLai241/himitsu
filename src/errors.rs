@@ -76,6 +76,10 @@ pub enum HimitsuError {
     #[error("Store nonce error: {0}")]
     StoreNonceError(String),
 
+    /// An error occurred while attempting to store a salt.
+    #[error("Store salt error: {0}")]
+    StoreSaltError(String),
+
     /// An error occurred while attempting to store a secret.
     #[error("Store secret error: {0}")]
     StoreSecretError(String),
