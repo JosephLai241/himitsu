@@ -84,6 +84,10 @@ pub enum HimitsuError {
     #[error("Store secret error: {0}")]
     StoreSecretError(String),
 
+    /// The user cancelled mid-prompt.
+    #[error("GOODBYE.")]
+    UserCancelled,
+
     /// Catch any other errors that may arise, such as `bail!`s returned via `Anyhow`.
     #[error(transparent)]
     Transparent(#[from] anyhow::Error),
