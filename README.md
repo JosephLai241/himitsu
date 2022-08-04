@@ -26,7 +26,7 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 
                               秘密
 
-                          シークレッツ
+                           シークレッツ
 ```
 
 > An encrypted command-line tool for managing secrets on your machine.
