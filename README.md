@@ -50,6 +50,8 @@ Everyone has secrets they want to keep hidden from others. Software developers i
 
 `himitsu` aims to mitigate the risk associated with storing unprotected secrets on your machine by providing a secrets management interface, allowing you to securely store/access sensitive data. Think of it like a command-line Bitwarden or LastPass.
 
+`himitsu` additionally acts as a centralized location to store secrets on your machine, eliminating the need to traverse endless configuration files to find a particular secret.
+
 # Usage
 
 `himitsu` implements four subcommands: `add`, `edit`, `remove`, and `use`.
