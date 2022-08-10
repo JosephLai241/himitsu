@@ -111,7 +111,7 @@ pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
         .prompt_skippable()?
         .unwrap_or("".to_string())
         .split(" ")
-        .map(|tag| tag.to_string())
+        .map(|tag| tag.to_string().to_lowercase())
         .collect();
 
     new_anatomy.tags = tags;

@@ -54,7 +54,11 @@ pub fn run_add_secret(
         }
     };
     let tags = match tags {
-        Some(tag_values) => tag_values.to_owned(),
+        Some(tag_values) => tag_values
+            .to_owned()
+            .iter()
+            .map(|tag| tag.to_lowercase())
+            .collect(),
         None => {
             let tags_input = Text::new("Set tags for this secret:")
                 .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
@@ -63,7 +67,7 @@ pub fn run_add_secret(
 
             tags_input
                 .split(" ")
-                .map(|tag| tag.to_string())
+                .map(|tag| tag.to_string().to_lowercase())
                 .collect::<Vec<String>>()
         }
     };
