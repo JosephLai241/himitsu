@@ -32,7 +32,7 @@ pub fn create_lookup(password: &str) -> Result<(), HimitsuError> {
     let lookup_table = LookupTable::new();
 
     match cipher.encrypt(
-        &lookup_nonce,
+        lookup_nonce,
         serde_json::to_string(&lookup_table)?.as_bytes(),
     ) {
         Ok(encrypted_lookup_table) => {

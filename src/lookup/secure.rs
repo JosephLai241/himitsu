@@ -63,7 +63,7 @@ pub fn decrypt_lookup_table(password: &str) -> Result<LookupTable, HimitsuError>
         },
         Err(error) => Err(HimitsuError::AEADDencryptionError(format!(
             "Lookup table decryption error: {}",
-            error.to_string()
+            error
         ))),
     }
 }
