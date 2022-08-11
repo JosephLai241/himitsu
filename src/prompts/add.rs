@@ -13,7 +13,7 @@ pub fn run_add_secret(
     label: &Option<String>,
     tags: &Option<Vec<String>>,
 ) -> Result<(String, String, String, Vec<String>), HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let label_validator: StringValidator = &|input| {
         if input.is_empty() {
@@ -23,19 +23,28 @@ pub fn run_add_secret(
         }
     };
 
-    let label = match label {
-        Some(label_value) => label_value.to_owned(),
-        None => Text::new("Enter a label for this secret:")
+    let label_input = if label.is_some() {
+        label.to_owned()
+    } else {
+        Text::new("Enter a label for this secret:")
             .with_render_config(render_config)
             .with_validator(label_validator)
-            .prompt()?,
+            .prompt_skippable()?
     };
-    let secret = Password::new("Enter your secret:")
+    if label_input.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
+
+    let secret_input = Password::new("Enter your secret:")
         .with_display_mode(PasswordDisplayMode::Hidden)
         .with_display_toggle_enabled()
         .with_render_config(render_config)
         .with_help_message("Press \"<CTRL> + r\" to reveal input.")
-        .prompt()?;
+        .prompt_skippable()?;
+    if secret_input.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
+
     let category = match category {
         Some(category_name) => category_name.to_string(),
         None => {
@@ -43,13 +52,16 @@ pub fn run_add_secret(
                 .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
                 .with_placeholder("Unclassified")
                 .with_render_config(render_config)
-                .prompt_skippable()?
-                .unwrap_or("Unclassified".to_string());
+                .prompt_skippable()?;
 
-            if input.is_empty() {
+            if input.is_none() {
+                return Err(HimitsuError::UserCancelled);
+            }
+
+            if input.as_ref().unwrap().is_empty() {
                 "Unclassified".to_string()
             } else {
-                input
+                input.unwrap().clone()
             }
         }
     };
@@ -63,14 +75,19 @@ pub fn run_add_secret(
             let tags_input = Text::new("Set tags for this secret:")
                 .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
                 .with_render_config(render_config)
-                .prompt_skippable()?.unwrap_or("".to_string());
+                .prompt_skippable()?;
+
+            if tags_input.is_none() {
+                return Err(HimitsuError::UserCancelled);
+            }
 
             tags_input
+                .unwrap()
                 .split(" ")
                 .map(|tag| tag.to_string().to_lowercase())
                 .collect::<Vec<String>>()
         }
     };
 
-    Ok((label, secret, category, tags))
+    Ok((label_input.unwrap(), secret_input.unwrap(), category, tags))
 }

@@ -12,7 +12,7 @@ use super::config::{self, ConfigType};
 
 /// Run the prompts asking which secret attributes to edit.
 pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let answer_formatter: MultiOptionFormatter<&str> = &|selections| {
         format!(
@@ -34,7 +34,7 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
 
     let options = vec!["Category", "Label", "Secret", "Tags"];
 
-    let mut update_targets = MultiSelect::new("Select the attributes you want to update:", options)
+    let update_targets_input = MultiSelect::new("Select the attributes you want to update:", options)
         .with_formatter(answer_formatter)
         .with_help_message(
             "Select at least 1 option. ↑↓ or ['j', 'k'] to move, space to select one, → to all, ← to none, type to filter",
@@ -42,8 +42,12 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
         .with_render_config(render_config)
         .with_validator(selector_validator)
         .with_vim_mode(true)
-        .prompt()?;
+        .prompt_skippable()?;
+    if update_targets_input.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
 
+    let mut update_targets = update_targets_input.unwrap();
     update_targets.sort();
 
     Ok(update_targets)
@@ -51,7 +55,7 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
 
 /// Run the prompt asking for a new category for this secret.
 pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let category = Text::new("Set a new category for this secret:")
         .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
@@ -67,7 +71,7 @@ pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> 
 
 /// Run the prompt asking for a new label for this secret.
 pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let label_validator: StringValidator = &|input| {
         if input.is_empty() {
@@ -77,33 +81,39 @@ pub fn run_edit_label(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
         }
     };
 
-    let label = Text::new("Enter a label for this secret:")
+    let label_input = Text::new("Enter a label for this secret:")
         .with_render_config(render_config)
         .with_validator(label_validator)
-        .prompt()?;
+        .prompt_skippable()?;
+    if label_input.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
 
-    new_anatomy.label = label;
+    new_anatomy.label = label_input.unwrap();
 
     Ok(())
 }
 
 /// Run the prompt asking for a new secret.
 pub fn run_edit_secret() -> Result<String, HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
-    let secret = Password::new("Enter your new secret:")
+    let secret_input = Password::new("Enter your new secret:")
         .with_display_mode(PasswordDisplayMode::Hidden)
         .with_display_toggle_enabled()
         .with_render_config(render_config)
         .with_help_message("Press \"<CTRL> + r\" to reveal input.")
-        .prompt()?;
+        .prompt_skippable()?;
+    if secret_input.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
 
-    Ok(secret)
+    Ok(secret_input.unwrap())
 }
 
 /// Run the prompt asking for new tags for this secret.
 pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
-    let render_config = config::get_inquire_config(ConfigType::Standard);
+    let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let tags = Text::new("Set new tags for this secret:")
         .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")

@@ -11,12 +11,16 @@ pub enum ConfigType {
 }
 
 /// Get the configuration settings for the application.
-pub fn get_inquire_config(config_type: ConfigType) -> RenderConfig {
+pub fn get_inquire_config(config_type: ConfigType, highlight_answer: bool) -> RenderConfig {
     let mut render_config = RenderConfig::default();
 
-    render_config.answer = StyleSheet::new()
-        .with_attr(Attributes::BOLD)
-        .with_fg(Color::DarkGreen);
+    render_config.answer = if highlight_answer {
+        StyleSheet::new()
+            .with_attr(Attributes::BOLD)
+            .with_fg(Color::DarkGreen)
+    } else {
+        StyleSheet::new()
+    };
     render_config.error_message = render_config
         .error_message
         .with_message(

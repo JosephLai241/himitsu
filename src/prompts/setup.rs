@@ -25,33 +25,48 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, HimitsuError> {
         }
     };
 
-    let password = Password::new("Set a password for your vault:")
+    println!(
+        "                            {}\n",
+        Color::Fixed(172)
+            .blink()
+            .bold()
+            .reverse()
+            .underline()
+            .paint("welcome")
+    );
+
+    match Password::new("Set up a password for your vault:")
         .with_display_mode(PasswordDisplayMode::Hidden)
         .with_display_toggle_enabled()
         .with_help_message(
             "Password must have at least 10 characters. Press \"<CTRL> + r\" to reveal input",
         )
-        .with_render_config(get_inquire_config(ConfigType::Standard))
+        .with_render_config(get_inquire_config(ConfigType::Standard, true))
         .with_validator(password_validator)
-        .prompt()?;
+        .prompt_skippable()?
+    {
+        Some(password) => {
+            let mut loading_bar =
+                Spinner::new(Spinners::Aesthetic, "Generating encryption data...".into());
 
-    let mut loading_bar = Spinner::new(Spinners::Aesthetic, "Generating encryption data...".into());
+            let encryption_data = generate_salt_and_password_hash(&password)?;
+            init::create_lookup(&password)?;
 
-    let encryption_data = generate_salt_and_password_hash(&password)?;
-    init::create_lookup(&password)?;
+            let mut crypt_json = config::get_crypt_json()?;
+            crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
 
-    let mut crypt_json = config::get_crypt_json()?;
-    crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
+            loading_bar.stop_and_persist(
+                "✅",
+                Color::Green
+                    .bold()
+                    .paint("Vault is configured.")
+                    .to_string(),
+            );
 
-    loading_bar.stop_and_persist(
-        "✅",
-        Color::Green
-            .bold()
-            .paint("Vault is configured.")
-            .to_string(),
-    );
-
-    Ok(encryption_data)
+            Ok(encryption_data)
+        }
+        None => Err(HimitsuError::UserCancelled),
+    }
 }
 
 /// Generate a new salt and password hash.

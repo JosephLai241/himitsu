@@ -48,14 +48,16 @@ pub fn run_select_secret(
         options.push(option);
     }
 
-    let selection = Select::new("Select a match:", options)
-        .with_render_config(config::get_inquire_config(ConfigType::Standard))
-        .prompt()?;
-
-    match pairs.get(&selection) {
-        Some(lookup_match) => Ok(serde_json::from_str(lookup_match)?),
-        None => Err(HimitsuError::LookupError(
-            "Could not find a matching hash ID for this secret!".to_string(),
-        )),
+    match Select::new("Select a match:", options)
+        .with_render_config(config::get_inquire_config(ConfigType::Standard, false))
+        .prompt_skippable()?
+    {
+        Some(selection) => match pairs.get(&selection) {
+            Some(lookup_match) => Ok(serde_json::from_str(lookup_match)?),
+            None => Err(HimitsuError::LookupError(
+                "Could not find a matching hash ID for this secret!".to_string(),
+            )),
+        },
+        None => Err(HimitsuError::UserCancelled),
     }
 }

@@ -17,7 +17,7 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<String, Himit
             .with_display_mode(PasswordDisplayMode::Hidden)
             .with_display_toggle_enabled()
             .with_help_message("Press \"<CTRL> + r\" to reveal input")
-            .with_render_config(config::get_inquire_config(ConfigType::Standard))
+            .with_render_config(config::get_inquire_config(ConfigType::Standard, true))
             .prompt_skippable()?;
 
         match password {

@@ -16,22 +16,26 @@ pub fn run_get_label(label: &Option<String>) -> Result<String, HimitsuError> {
         }
     };
 
-    let label = match label {
-        Some(label_value) => label_value.to_owned(),
+    match label {
+        Some(label_value) => Ok(label_value.to_owned()),
         None => Text::new("Enter the label of the secret you want to access:")
             .with_help_message("Also accepts Regex expressions")
-            .with_render_config(config::get_inquire_config(ConfigType::Standard))
+            .with_render_config(config::get_inquire_config(ConfigType::Standard, true))
             .with_validator(label_validator)
-            .prompt()?,
-    };
-
-    Ok(label)
+            .prompt_skippable()?
+            .map_or(Err(HimitsuError::UserCancelled), Ok),
+    }
 }
 
 /// Run a confirmation prompt with a message.
 pub fn run_confirmation_prompt(message: &str) -> Result<bool, HimitsuError> {
-    Ok(Confirm::new(message)
+    let confirmation = Confirm::new(message)
         .with_default(true)
-        .with_render_config(config::get_inquire_config(ConfigType::Confirm))
-        .prompt()?)
+        .with_render_config(config::get_inquire_config(ConfigType::Confirm, true))
+        .prompt_skippable()?;
+    if confirmation.is_none() {
+        return Err(HimitsuError::UserCancelled);
+    }
+
+    Ok(confirmation.unwrap())
 }
