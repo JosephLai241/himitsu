@@ -1,5 +1,7 @@
 //! Contains encryption functions for `himitsu`.
 
+use std::fmt::Write;
+
 use ansi_term::Color;
 use chacha20poly1305::{
     aead::{consts::U24, generic_array::GenericArray, Aead, NewAead},
@@ -71,15 +73,16 @@ pub fn encrypt_secret(
 /// Generate a SHA256 hash for a new secret.
 fn generate_sha256_hash(
     anatomy: &Anatomy,
-    ciphertext: &Vec<u8>,
+    ciphertext: &[u8],
     nonce: &GenericArray<u8, U24>,
 ) -> String {
-    let mut hash_string = String::from_utf8_lossy(&ciphertext).to_string();
-    hash_string.push_str(&format!(
+    let mut hash_string = String::from_utf8_lossy(ciphertext).to_string();
+    let _ = write!(
+        hash_string,
         "{}{}{}{:?}{:?}",
         anatomy.category, anatomy.date_created, anatomy.label, anatomy.last_accessed, anatomy.tags
-    ));
-    hash_string.push_str(&String::from_utf8_lossy(&nonce));
+    );
+    hash_string.push_str(&String::from_utf8_lossy(nonce));
 
     let mut context = Context::new(&SHA256);
     context.update(hash_string.as_bytes());
@@ -97,7 +100,7 @@ fn update_lookup_table(
 ) -> Result<(), HimitsuError> {
     let mut write_spinner = Spinner::new(Spinners::Noise, "Storing your secret...".into());
 
-    let secret_hash = generate_sha256_hash(&anatomy, &ciphertext, nonce);
+    let secret_hash = generate_sha256_hash(anatomy, &ciphertext, nonce);
 
     let mut lookup_table = secure::decrypt_lookup_table(password)?;
 

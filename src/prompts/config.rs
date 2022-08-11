@@ -34,14 +34,11 @@ pub fn get_inquire_config(config_type: ConfigType, highlight_answer: bool) -> Re
         .with_fg(Color::DarkYellow);
     render_config.prompt_prefix = Styled::new("㊙");
 
-    match config_type {
-        ConfigType::Confirm => {
-            render_config.prompt = render_config
-                .prompt
-                .with_attr(Attributes::BOLD)
-                .with_fg(Color::DarkYellow)
-        }
-        _ => {}
+    if let ConfigType::Confirm = config_type {
+        render_config.prompt = render_config
+            .prompt
+            .with_attr(Attributes::BOLD)
+            .with_fg(Color::DarkYellow)
     }
 
     render_config

@@ -61,7 +61,7 @@ pub fn run_add_secret(
             if input.as_ref().unwrap().is_empty() {
                 "Unclassified".to_string()
             } else {
-                input.unwrap().clone()
+                input.unwrap()
             }
         }
     };
@@ -83,7 +83,7 @@ pub fn run_add_secret(
 
             tags_input
                 .unwrap()
-                .split(" ")
+                .split(' ')
                 .map(|tag| tag.to_string().to_lowercase())
                 .collect::<Vec<String>>()
         }

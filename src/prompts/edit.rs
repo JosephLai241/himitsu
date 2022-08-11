@@ -25,7 +25,7 @@ pub fn run_edit_targets<'a>() -> Result<Vec<&'a str>, HimitsuError> {
         )
     };
     let selector_validator: MultiOptionValidator<&str> = &|selections| {
-        if selections.len() == 0 {
+        if selections.is_empty() {
             Err("Please select at least one option!".to_string())
         } else {
             Ok(())
@@ -62,7 +62,7 @@ pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> 
         .with_placeholder("Unclassified")
         .with_render_config(render_config)
         .prompt_skippable()?
-        .unwrap_or("Unclassified".to_string());
+        .unwrap_or_else(|| "Unclassified".to_string());
 
     new_anatomy.category = category;
 
@@ -119,8 +119,8 @@ pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
         .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
         .with_render_config(render_config)
         .prompt_skippable()?
-        .unwrap_or("".to_string())
-        .split(" ")
+        .unwrap_or_else(|| "".to_string())
+        .split(' ')
         .map(|tag| tag.to_string().to_lowercase())
         .collect();
 

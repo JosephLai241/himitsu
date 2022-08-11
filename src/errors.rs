@@ -1,10 +1,5 @@
 //! Contains errors that may be raised in the application.
 
-use anyhow;
-use argon2;
-use inquire;
-use regex;
-use serde_json;
 use thiserror::Error;
 
 use std::{io, string::FromUtf8Error};

@@ -1,6 +1,10 @@
 //! Contains decryption functions for `himitsu`.
 
-use std::{fs::File, io::Read, path::PathBuf};
+use std::{
+    fs::File,
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 use ansi_term::Color;
 use argon2;
@@ -39,7 +43,7 @@ pub fn decrypt_secret(
     let encrypted_secret = &get_secret(&hash_path)?[..];
 
     let argon2_config = authentication::get_argon2_config();
-    let key = argon2::hash_raw(&password.as_bytes(), &salt, &argon2_config)?;
+    let key = argon2::hash_raw(password.as_bytes(), &salt, &argon2_config)?;
 
     let cipher = XChaCha20Poly1305::new(Key::from_slice(&key));
 
@@ -82,7 +86,7 @@ pub fn decrypt_secret(
             );
             Err(HimitsuError::AEADDencryptionError(format!(
                 "Secret decryption error: {}",
-                error.to_string()
+                error
             )))
         }
     }
@@ -99,7 +103,7 @@ fn get_secret_hash_path(hash_id: &str) -> Result<PathBuf, HimitsuError> {
 }
 
 /// Get the secret's nonce value.
-fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], HimitsuError> {
+fn get_secret_nonce(hash_path: &Path) -> Result<[u8; 24], HimitsuError> {
     let mut nonce_file = File::open(hash_path.join("nonce"))?;
     let mut raw_nonce = [0u8; 24];
     nonce_file.read_exact(&mut raw_nonce)?;
@@ -108,7 +112,7 @@ fn get_secret_nonce(hash_path: &PathBuf) -> Result<[u8; 24], HimitsuError> {
 }
 
 /// Get the secret's salt value.
-fn get_secret_salt(hash_path: &PathBuf) -> Result<[u8; 32], HimitsuError> {
+fn get_secret_salt(hash_path: &Path) -> Result<[u8; 32], HimitsuError> {
     let mut nonce_file = File::open(hash_path.join("salt"))?;
     let mut salt = [0u8; 32];
     nonce_file.read_exact(&mut salt)?;
@@ -117,7 +121,7 @@ fn get_secret_salt(hash_path: &PathBuf) -> Result<[u8; 32], HimitsuError> {
 }
 
 /// Get the encrypted secret itself.
-fn get_secret(hash_path: &PathBuf) -> Result<Vec<u8>, HimitsuError> {
+fn get_secret(hash_path: &Path) -> Result<Vec<u8>, HimitsuError> {
     let mut secret_file = File::open(hash_path.join("skeleton"))?;
     let mut encrypted_secret = Vec::new();
     secret_file.read_to_end(&mut encrypted_secret)?;

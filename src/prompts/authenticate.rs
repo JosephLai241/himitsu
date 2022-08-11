@@ -32,10 +32,9 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<String, Himit
                             Color::Fixed(172).bold().paint("Please enter a password.")
                         ),
                     );
-                } else {
-                    if !authentication::check_authorization(encryption_values, &input)? {
-                        if try_count < 2 {
-                            login_spinner.stop_and_persist(
+                } else if !authentication::check_authorization(encryption_values, &input)? {
+                    if try_count < 2 {
+                        login_spinner.stop_and_persist(
                                 "🤔",
                                 format!(
                                     "{}",
@@ -44,27 +43,26 @@ pub fn authenticate_user(encryption_values: &Encryption) -> Result<String, Himit
                                     )
                                 ),
                             );
-                        } else {
-                            login_spinner.stop_and_persist(
-                                "🥴",
-                                format!("{}", Color::Red.bold().paint("FAILED TO AUTHENTICATE.")),
-                            );
-                        }
-
-                        try_count += 1;
                     } else {
                         login_spinner.stop_and_persist(
-                            "💯",
-                            format!("{}", Color::Green.bold().paint("Success.")),
+                            "🥴",
+                            format!("{}", Color::Red.bold().paint("FAILED TO AUTHENTICATE.")),
                         );
-
-                        return Ok(input);
                     }
+
+                    try_count += 1;
+                } else {
+                    login_spinner.stop_and_persist(
+                        "💯",
+                        format!("{}", Color::Green.bold().paint("Success.")),
+                    );
+
+                    return Ok(input);
                 }
             }
             None => return Err(HimitsuError::FailedToLogin),
         }
     }
 
-    return Err(HimitsuError::FailedToLogin);
+    Err(HimitsuError::FailedToLogin)
 }

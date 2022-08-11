@@ -23,17 +23,16 @@ pub fn run_select_secret(
                 painted_label,
                 Color::Green
                     .bold()
-                    .paint(format!("{}", lookup_match.anatomy.date_created)),
-                Color::Cyan.bold().paint(format!(
-                    "{}",
+                    .paint(lookup_match.anatomy.date_created.to_string()),
+                Color::Cyan.bold().paint(
                     match &lookup_match.anatomy.last_accessed {
                         Some(date) => date,
                         None => "N/A",
                     }
-                )),
+                ),
                 Color::Blue
                     .bold()
-                    .paint(format!("{}", lookup_match.anatomy.category)),
+                    .paint(lookup_match.anatomy.category.to_string()),
                 Color::Yellow
                     .bold()
                     .paint(if lookup_match.anatomy.tags.is_empty() {

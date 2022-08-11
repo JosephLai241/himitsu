@@ -18,15 +18,13 @@ pub fn get_encryption_values() -> Result<Option<Encryption>, HimitsuError> {
 
             if !crypt_json_path.exists() {
                 Ok(None)
-            } else {
-                if let Ok(mut file) = File::open(&crypt_json_path) {
-                    let mut data = String::new();
-                    file.read_to_string(&mut data)?;
+            } else if let Ok(mut file) = File::open(&crypt_json_path) {
+                let mut data = String::new();
+                file.read_to_string(&mut data)?;
 
-                    Ok(Some(serde_json::from_str(&data)?))
-                } else {
-                    Ok(None)
-                }
+                Ok(Some(serde_json::from_str(&data)?))
+            } else {
+                Ok(None)
             }
         }
         None => Err(HimitsuError::ApplicationError),
