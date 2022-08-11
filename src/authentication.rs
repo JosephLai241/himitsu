@@ -17,7 +17,7 @@ use crate::{errors::HimitsuError, models::encryption::Encryption};
 pub fn get_argon2_config<'a>() -> Config<'a> {
     Config {
         hash_length: 32,
-        lanes: 1,
+        lanes: 8,
         mem_cost: 15000,
         thread_mode: Parallel,
         time_cost: 2,
