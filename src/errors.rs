@@ -51,6 +51,11 @@ pub enum HimitsuError {
     #[error("Lookup table error: {0}")]
     LookupError(String),
 
+    /// This error is used if no secrets are currently stored in the vault and the user attempts to
+    /// edit, remove, or use a secret.
+    #[error("There are no secrets stored in your vault!")]
+    NoSecretsError,
+
     /// An error occurred while performing any path-related tasks.
     #[error("Path error: {0}")]
     PathError(String),

@@ -15,6 +15,7 @@ use crate::{
     },
     models::metadata::Anatomy,
     prompts::{add, edit, use_secret, utils},
+    utils::closet,
 };
 
 /// Contains subcommands for `himitsu`.
@@ -72,6 +73,10 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
             encrypt::encrypt_secret(&anatomy, password, secret)?;
         }
         SubCommands::Edit { label } => {
+            if !closet::check_for_skeletons()? {
+                return Err(HimitsuError::NoSecretsError);
+            }
+
             let label = utils::run_get_label(label)?;
             let found_matches =
                 lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
@@ -152,6 +157,10 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
             }
         }
         SubCommands::Remove { label } => {
+            if !closet::check_for_skeletons()? {
+                return Err(HimitsuError::NoSecretsError);
+            }
+
             let label = utils::run_get_label(label)?;
             let found_matches =
                 lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
@@ -198,6 +207,10 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
             }
         }
         SubCommands::Use { label } => {
+            if !closet::check_for_skeletons()? {
+                return Err(HimitsuError::NoSecretsError);
+            }
+
             let label = utils::run_get_label(label)?;
             let found_matches =
                 lookup_utils::search_in_lookup_table(LookupMode::Search(label), password)?;
