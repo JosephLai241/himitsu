@@ -21,6 +21,9 @@ use crate::{
 #[derive(Debug, Subcommand)]
 pub enum SubCommands {
     /// Add a new secret.
+    ///
+    /// NOTE: Since the `-t/--tags` flag accepts space-delimited values, this flag should be used
+    /// at the end of the command.
     Add {
         /// Set a category for this secret.
         #[clap(long, short)]
