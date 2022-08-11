@@ -30,43 +30,76 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, HimitsuError> {
         Color::Fixed(172)
             .blink()
             .bold()
+            .italic()
             .reverse()
             .underline()
             .paint("welcome")
     );
 
-    match Password::new("Set up a password for your vault:")
-        .with_display_mode(PasswordDisplayMode::Hidden)
-        .with_display_toggle_enabled()
-        .with_help_message(
-            "Password must have at least 10 characters. Press \"<CTRL> + r\" to reveal input",
-        )
-        .with_render_config(get_inquire_config(ConfigType::Standard, true))
-        .with_validator(password_validator)
-        .prompt_skippable()?
-    {
-        Some(password) => {
-            let mut loading_bar =
-                Spinner::new(Spinners::Aesthetic, "Generating encryption data...".into());
+    let password;
 
-            let encryption_data = generate_salt_and_password_hash(&password)?;
-            init::create_lookup(&password)?;
+    loop {
+        let first_password = Password::new("Set a password for your vault:")
+            .with_display_mode(PasswordDisplayMode::Hidden)
+            .with_display_toggle_enabled()
+            .with_help_message(
+                "Password must have at least 10 characters. Press \"<CTRL> + r\" to reveal input",
+            )
+            .with_render_config(get_inquire_config(ConfigType::Standard, true))
+            .with_validator(password_validator)
+            .prompt_skippable()?;
+        if first_password.is_none() {
+            return Err(HimitsuError::UserCancelled);
+        }
 
-            let mut crypt_json = config::get_crypt_json()?;
-            crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
+        let second_password = Password::new("Re-enter your password:")
+            .with_display_mode(PasswordDisplayMode::Hidden)
+            .with_display_toggle_enabled()
+            .with_help_message("Press \"<CTRL> + r\" to reveal input")
+            .with_render_config(get_inquire_config(ConfigType::Standard, true))
+            .prompt_skippable()?;
+        if second_password.is_none() {
+            return Err(HimitsuError::UserCancelled);
+        }
 
-            loading_bar.stop_and_persist(
-                "✅",
-                Color::Green
+        let mut validation_spinner = Spinner::new(
+            Spinners::SquareCorners,
+            "Checking if passwords match...".into(),
+        );
+        if second_password != first_password {
+            validation_spinner.stop_and_persist(
+                "❗️",
+                Color::Red
                     .bold()
-                    .paint("Vault is configured.")
+                    .paint("PASSWORDS DO NOT MATCH.")
                     .to_string(),
             );
+        } else {
+            validation_spinner.stop_and_persist("✅", "Passwords match.".into());
 
-            Ok(encryption_data)
+            password = first_password.unwrap();
+
+            break;
         }
-        None => Err(HimitsuError::UserCancelled),
     }
+
+    let mut loading_bar = Spinner::new(Spinners::Aesthetic, "Generating encryption data...".into());
+
+    let encryption_data = generate_salt_and_password_hash(&password)?;
+    init::create_lookup(&password)?;
+
+    let mut crypt_json = config::get_crypt_json()?;
+    crypt_json.write_all(serde_json::to_string(&encryption_data)?.as_bytes())?;
+
+    loading_bar.stop_and_persist(
+        "🔒",
+        Color::Green
+            .bold()
+            .paint("Vault is configured.")
+            .to_string(),
+    );
+
+    Ok(encryption_data)
 }
 
 /// Generate a new salt and password hash.
