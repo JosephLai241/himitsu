@@ -10,7 +10,7 @@ use crate::{
     },
     errors::HimitsuError,
     lookup::{
-        modify,
+        modify::{self, RemovalEvent},
         utils::{self as lookup_utils, LookupMode},
     },
     models::metadata::Anatomy,
@@ -105,7 +105,11 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
                         }
                     }
 
-                    modify::remove_in_lookup_table(&lookup_match.hash, password)?;
+                    modify::remove_in_lookup_table(
+                        &lookup_match.hash,
+                        password,
+                        RemovalEvent::Replace,
+                    )?;
 
                     encrypt::encrypt_secret(&new_anatomy, password, new_secret.unwrap_or(secret))?;
                 } else {
@@ -135,7 +139,11 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
                     }
                 }
 
-                modify::remove_in_lookup_table(&lookup_match.hash, password)?;
+                modify::remove_in_lookup_table(
+                    &lookup_match.hash,
+                    password,
+                    RemovalEvent::Replace,
+                )?;
 
                 encrypt::encrypt_secret(&new_anatomy, password, new_secret.unwrap_or(secret))?;
             }
@@ -159,7 +167,11 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
                     if utils::run_confirmation_prompt(
                         "Are you sure you want to permanently delete the selected secret?",
                     )? {
-                        modify::remove_in_lookup_table(&lookup_match.hash, password)?;
+                        modify::remove_in_lookup_table(
+                            &lookup_match.hash,
+                            password,
+                            RemovalEvent::Remove,
+                        )?;
                     } else {
                         println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                     }
@@ -172,7 +184,11 @@ pub fn run_subcommands(password: &str, subcommand: &SubCommands) -> Result<(), H
                 if utils::run_confirmation_prompt(
                     "Are you sure you want to permanently delete the selected secret?",
                 )? {
-                    modify::remove_in_lookup_table(&lookup_match.hash, password)?;
+                    modify::remove_in_lookup_table(
+                        &lookup_match.hash,
+                        password,
+                        RemovalEvent::Remove,
+                    )?;
                 } else {
                     println!("\n{}\n", Color::Red.bold().paint("GOODBYE."));
                 }

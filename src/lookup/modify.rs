@@ -47,9 +47,27 @@ pub fn update_last_accessed(hash_id: &str, password: &str) -> Result<(), Himitsu
     }
 }
 
+/// Contains variants for removal events.
+pub enum RemovalEvent {
+    /// Just remove an existing secret.
+    Remove,
+    /// Replace an existing secret with a new secret.
+    Replace,
+}
+
 /// Remove an existing hash and corresponding `Anatomy` in the lookup table.
-pub fn remove_in_lookup_table(hash_id: &str, password: &str) -> Result<(), HimitsuError> {
-    let mut removal_spinner = Spinner::new(Spinners::Aesthetic, "Removing your secret...".into());
+pub fn remove_in_lookup_table(
+    hash_id: &str,
+    password: &str,
+    removal_event: RemovalEvent,
+) -> Result<(), HimitsuError> {
+    let mut removal_spinner = Spinner::new(
+        Spinners::Aesthetic,
+        match removal_event {
+            RemovalEvent::Remove => "Removing your secret...".into(),
+            RemovalEvent::Replace => "Removing your old secret...".into(),
+        },
+    );
 
     let mut lookup_table = secure::decrypt_lookup_table(password)?;
 
@@ -65,7 +83,10 @@ pub fn remove_in_lookup_table(hash_id: &str, password: &str) -> Result<(), Himit
                 "✅",
                 Color::Green
                     .bold()
-                    .paint("Successfully removed your secret.")
+                    .paint(match removal_event {
+                        RemovalEvent::Remove => "Successfully removed your secret.",
+                        RemovalEvent::Replace => "Successfully removed your old secret.",
+                    })
                     .to_string(),
             );
 
