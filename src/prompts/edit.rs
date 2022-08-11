@@ -61,12 +61,19 @@ pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> 
         .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
         .with_placeholder("Unclassified")
         .with_render_config(render_config)
-        .prompt_skippable()?
-        .unwrap_or_else(|| "Unclassified".to_string());
+        .prompt_skippable()?;
 
-    new_anatomy.category = category;
+    if let Some(category) = category {
+        if category.is_empty() {
+            new_anatomy.category = "Unclassified".to_string();
+        } else {
+            new_anatomy.category = category;
+        }
 
-    Ok(())
+        Ok(())
+    } else {
+        Err(HimitsuError::UserCancelled)
+    }
 }
 
 /// Run the prompt asking for a new label for this secret.
@@ -118,13 +125,20 @@ pub fn run_edit_tags(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> {
     let tags = Text::new("Set new tags for this secret:")
         .with_help_message("(OPTIONAL) Enter a list of space-delimited tags. No default tags are applied if none are specified")
         .with_render_config(render_config)
-        .prompt_skippable()?
-        .unwrap_or_else(|| "".to_string())
-        .split(' ')
-        .map(|tag| tag.to_string().to_lowercase())
-        .collect();
+        .prompt_skippable()?;
 
-    new_anatomy.tags = tags;
+    if let Some(tags) = tags {
+        if tags.is_empty() {
+            new_anatomy.tags = vec![];
+        } else {
+            new_anatomy.tags = tags
+                .split(' ')
+                .map(|tag| tag.to_string().to_lowercase())
+                .collect();
+        }
 
-    Ok(())
+        Ok(())
+    } else {
+        Err(HimitsuError::UserCancelled)
+    }
 }
