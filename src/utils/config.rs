@@ -17,32 +17,16 @@ pub fn get_encryption_values() -> Result<Option<Encryption>, HimitsuError> {
             let crypt_json_path = project_directory.config_dir().join("crypt.json");
 
             if !crypt_json_path.exists() {
-                match &crypt_json_path.parent() {
-                    Some(parent) => {
-                        fs::create_dir_all(parent)?;
-                        let _file = File::create(&crypt_json_path)?;
-
-                        return Ok(None);
-                    }
-                    None => {
-                        return Err(HimitsuError::PathError(
-                            "Could not get the path to the himitsu application directory!"
-                                .to_string(),
-                        ))
-                    }
-                }
-            }
-
-            if let Ok(mut file) = File::open(&crypt_json_path) {
-                let mut data = String::new();
-                file.read_to_string(&mut data)?;
-
-                Ok(Some(serde_json::from_str(&data)?))
-            } else {
-                // NOTE: `File::open()` returns an `Err` if the path does not exist.
-                let _file = File::create(&crypt_json_path)?;
-
                 Ok(None)
+            } else {
+                if let Ok(mut file) = File::open(&crypt_json_path) {
+                    let mut data = String::new();
+                    file.read_to_string(&mut data)?;
+
+                    Ok(Some(serde_json::from_str(&data)?))
+                } else {
+                    Ok(None)
+                }
             }
         }
         None => Err(HimitsuError::ApplicationError),
@@ -54,6 +38,21 @@ pub fn get_crypt_json() -> Result<File, HimitsuError> {
     match ProjectDirs::from("", "", "himitsu") {
         Some(project_directory) => {
             let crypt_json_path = project_directory.config_dir().join("crypt.json");
+
+            if !crypt_json_path.exists() {
+                match &crypt_json_path.parent() {
+                    Some(parent) => {
+                        fs::create_dir_all(parent)?;
+                        let _file = File::create(&crypt_json_path)?;
+                    }
+                    None => {
+                        return Err(HimitsuError::PathError(
+                            "Could not get the path to the himitsu application directory!"
+                                .to_string(),
+                        ));
+                    }
+                }
+            }
 
             Ok(File::create(crypt_json_path)?)
         }
