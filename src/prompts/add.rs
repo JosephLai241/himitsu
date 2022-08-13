@@ -49,8 +49,8 @@ pub fn run_add_secret(
         Some(category_name) => category_name.to_lowercase(),
         None => {
             let input = Text::new("Set a category for this secret:")
+                .with_default("unclassified")
                 .with_help_message("(OPTIONAL) Defaults to \"unclassified\"")
-                .with_placeholder("unclassified")
                 .with_render_config(render_config)
                 .prompt_skippable()?;
 
