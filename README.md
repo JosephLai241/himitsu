@@ -37,10 +37,12 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 * [Installation](#installation)
 	+ [Compile From Source](#compile-from-source)
 * [Usage](#usage)
-	+ [`hmu add`](#hmu-add)
-	+ [`hmu edit`](#hmu-edit)
-	+ [`hmu remove`](#hmu-remove)
-	+ [`hmu use`](#hmu-use)
+	+ [Initial Setup](#initial-setup)
+	+ [Subcommands](#subcommands)
+		* [`hmu add`](#hmu-add)
+		* [`hmu edit`](#hmu-edit)
+		* [`hmu remove`](#hmu-remove)
+		* [`hmu use`](#hmu-use)
 
 # Why `himitsu`?
 
@@ -69,35 +71,73 @@ The compiled binary is located in `himitsu/target/release/` directory and is nam
 
 # Usage
 
+## Initial Setup
+
 On the first run, `himitsu` will ask you to setup up a password for your vault.
 
 ![Setup][setup]
 
-`himitsu` implements four subcommands: `add`, `edit`, `remove`, and `use`.
+## Subcommands
 
-# `hmu add`
+`himitsu` currently implements four subcommands: `add`, `edit`, `remove`, and `use`. You can print the help message for each of these subcommands by appending the `--help` flag after the subcommand.
+
+## `hmu add`
 
 ![Add secret][add]
 
 This subcommand allows you to add a new secret to the data store.
 
-# `hmu edit`
+You can also pass in an additional positional argument and flags to this subcommand to quickly set the secret's label, category, and any tags before logging in to bypass the interactive prompts for these aspects of the secret. Ie.
+
+```
+hmu add [<SECRET_LABEL>] [-c <CATEGORY>] [-t <SPACE_DELIMITED_TAGS>]
+```
+
+> **NOTE:** Include the `-t`/`--tags` last - this flag accepts space-delimited tags and may misinterpret another flag as a tag if used before other flags or positional argument.
+
+> **TIP:** The `[<SECRET_LABEL>]` positional argument accepts regex expressions.
+
+## `hmu edit`
 
 ![Edit secret][edit]
 
 This subcommand allows you to edit an existing secret in the data store.
 
-# `hmu remove`
+You can also pass in an additional positional argument to search for a secret by its label. Ie.
+
+```
+hmu edit [<SECRET_LABEL>]
+```
+
+> **TIP:** The `[<SECRET_LABEL>]` positional argument accepts regex expressions.
+
+## `hmu remove`
 
 ![Remove secret][remove]
 
 This subcommand allows you to remove an existing secret in the data store.
 
-# `hmu use`
+You can also pass in an additional positional argument to search for a secret by its label. Ie.
+
+```
+hmu remove [<SECRET_LABEL>]
+```
+
+> **TIP:** The `[<SECRET_LABEL>]` positional argument accepts regex expressions.
+
+## `hmu use`
 
 ![Use secret][use]
 
 This subcommand allows you to use a secret in the data store. After authentication, the secret will be copied to your clipboard so you can quickly paste it wherever you need to use the secret.
+
+You can also pass in an additional positional argument to search for a secret by its label. Ie.
+
+```
+hmu use [<SECRET_LABEL>]
+```
+
+> **TIP:** The `[<SECRET_LABEL>]` positional argument accepts regex expressions.
 
 [Rust]: https://www.rust-lang.org/
 
