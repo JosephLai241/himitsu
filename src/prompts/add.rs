@@ -46,7 +46,7 @@ pub fn run_add_secret(
     }
 
     let category = match category {
-        Some(category_name) => category_name.to_lowercase().to_string(),
+        Some(category_name) => category_name.to_lowercase(),
         None => {
             let input = Text::new("Set a category for this secret:")
                 .with_help_message("(OPTIONAL) Defaults to \"unclassified\"")

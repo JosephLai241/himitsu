@@ -11,7 +11,7 @@ pub fn check_for_skeletons() -> Result<bool, HimitsuError> {
             let closet_path = project_directory.data_dir().join("closet");
 
             if closet_path.exists() {
-                Ok(!(closet_path.read_dir()?.count() == 0))
+                Ok(closet_path.read_dir()?.count() != 0)
             } else {
                 Ok(false)
             }
