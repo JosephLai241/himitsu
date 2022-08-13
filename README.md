@@ -36,7 +36,8 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 # Table of Contents
 
 * [Why `himitsu`?](#why-himitsu)
-* [How Does It Work?](#how-does-it-work)
+* [Installation](#installation)
+	+ [Compile From Source](#compile-from-source)
 * [Usage](#usage)
 	+ [`himitsu add`](#himitsu-add)
 	+ [`himitsu edit`](#himitsu-edit)
@@ -54,22 +55,38 @@ Everyone has secrets they want to keep hidden from others. Software developers i
 
 `himitsu` additionally acts as a centralized location to store secrets on your machine, eliminating the need to traverse endless configuration files to find a particular secret.
 
+# Installation
+
+## Compile From Source
+
+> **NOTE:** You will need [Rust][Rust] installed on your system to complie this program.
+
+Clone this repository and `cd` into the `himitsu/` directory. Then run the following command:
+
+```
+cargo build --release
+```
+
+The compiled binary is located in `himitsu/target/release/` directory and is named `hmu`. You can now move the `hmu` binary to a different location for easier access, such as `/usr/local/bin` or `usr/bin`.
+
 # Usage
 
 `himitsu` implements four subcommands: `add`, `edit`, `remove`, and `use`.
 
-# `himitsu add`
+# `hmu add`
 
 This subcommand allows you to add a new secret to the data store.
 
-# `himitsu edit`
+# `hmu edit`
 
 This subcommand allows you to edit an existing secret in the data store.
 
-# `himitsu remove`
+# `hmu remove`
 
 This subcommand allows you to remove an existing secret in the data store.
 
-# `himitsu use`
+# `hmu use`
 
 This subcommand allows you to use a secret in the data store. After authentication, the secret will be copied to your clipboard so you can quickly paste it wherever you need to use the secret.
+
+[Rust]: https://www.rust-lang.org/
