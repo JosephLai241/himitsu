@@ -39,10 +39,10 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 * [Installation](#installation)
 	+ [Compile From Source](#compile-from-source)
 * [Usage](#usage)
-	+ [`himitsu add`](#hmu-add)
-	+ [`himitsu edit`](#hmu-edit)
-	+ [`himitsu remove`](#hmu-remove)
-	+ [`himitsu use`](#hmu-use)
+	+ [`hmu add`](#hmu-add)
+	+ [`hmu edit`](#hmu-edit)
+	+ [`hmu remove`](#hmu-remove)
+	+ [`hmu use`](#hmu-use)
 
 # Why `himitsu`?
 
