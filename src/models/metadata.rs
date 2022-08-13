@@ -41,7 +41,7 @@ impl Anatomy {
 /// LookupTable {
 ///     table: {
 ///         "5d5c6f5b57bd22dded4046fa2eae5a64ec5aa5e3d6ba7420084a6245b7284ac4": { // Some hash
-///             category: "Unclassified",
+///             category: "unclassified",
 ///             date_created: "2006-06-06 06:06:06",
 ///             label: "Some secret",
 ///             last_accessed: None,

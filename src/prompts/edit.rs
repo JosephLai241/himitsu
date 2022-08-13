@@ -58,16 +58,16 @@ pub fn run_edit_category(new_anatomy: &mut Anatomy) -> Result<(), HimitsuError> 
     let render_config = config::get_inquire_config(ConfigType::Standard, true);
 
     let category = Text::new("Set a new category for this secret:")
-        .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
-        .with_placeholder("Unclassified")
+        .with_help_message("(OPTIONAL) Defaults to \"unclassified\"")
+        .with_placeholder("unclassified")
         .with_render_config(render_config)
         .prompt_skippable()?;
 
     if let Some(category) = category {
         if category.is_empty() {
-            new_anatomy.category = "Unclassified".to_string();
+            new_anatomy.category = "unclassified".to_string();
         } else {
-            new_anatomy.category = category;
+            new_anatomy.category = category.to_lowercase();
         }
 
         Ok(())

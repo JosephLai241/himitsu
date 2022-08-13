@@ -28,7 +28,6 @@ pub fn run_initial_setup_prompts() -> Result<Encryption, HimitsuError> {
     println!(
         "                            {}\n",
         Color::Fixed(172)
-            .blink()
             .bold()
             .italic()
             .reverse()

@@ -46,11 +46,11 @@ pub fn run_add_secret(
     }
 
     let category = match category {
-        Some(category_name) => category_name.to_string(),
+        Some(category_name) => category_name.to_lowercase().to_string(),
         None => {
             let input = Text::new("Set a category for this secret:")
-                .with_help_message("(OPTIONAL) Defaults to \"Unclassified\"")
-                .with_placeholder("Unclassified")
+                .with_help_message("(OPTIONAL) Defaults to \"unclassified\"")
+                .with_placeholder("unclassified")
                 .with_render_config(render_config)
                 .prompt_skippable()?;
 
@@ -59,9 +59,9 @@ pub fn run_add_secret(
             }
 
             if input.as_ref().unwrap().is_empty() {
-                "Unclassified".to_string()
+                "unclassified".to_string()
             } else {
-                input.unwrap()
+                input.unwrap().to_lowercase()
             }
         }
     };
