@@ -31,7 +31,7 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
                            シークレッツ
 ```
 
-> An encrypted command-line tool for managing secrets on your machine.
+> `Himitsu` (`hmu`) - An encrypted command-line tool for managing secrets on your machine.
 
 # Table of Contents
 
