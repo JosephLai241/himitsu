@@ -38,7 +38,7 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 
 * [Why `himitsu`?](#why-himitsu)
 * [Installation](#installation)
-	+ [From crates.io](#from-crates.io)
+	+ [From crates.io](#from-cratesio)
 	+ [Compile From Source](#compile-from-source)
 * [Usage](#usage)
 	+ [Initial Setup](#initial-setup)
