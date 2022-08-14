@@ -31,10 +31,13 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 
 > `Himitsu` (`hmu`) - An encrypted command-line tool for managing secrets on your machine.
 
+![Crates.io](https://img.shields.io/crates/v/himitsu?logo=rust&style=for-the-badge)
+
 # Table of Contents
 
 * [Why `himitsu`?](#why-himitsu)
 * [Installation](#installation)
+	+ [From crates.io](#from-crates.io)
 	+ [Compile From Source](#compile-from-source)
 * [Usage](#usage)
 	+ [Initial Setup](#initial-setup)
@@ -56,6 +59,14 @@ Everyone has secrets they want to keep hidden from others. Software developers i
 `himitsu` additionally acts as a centralized location to store secrets on your machine, eliminating the need to traverse endless configuration files to find a particular secret.
 
 # Installation
+
+## From [crates.io][Crates.io]
+
+> **NOTE:** You will need [Rust][Rust] installed on your system to install this program with this method.
+
+```
+cargo install himitsu
+```
 
 ## Compile From Source
 
