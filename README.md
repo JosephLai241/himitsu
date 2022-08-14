@@ -150,6 +150,7 @@ hmu use [<SECRET_LABEL>]
 
 > **TIP:** The `[<SECRET_LABEL>]` positional argument accepts regex expressions.
 
+[Crates.io]: https://crates.io/
 [Rust]: https://www.rust-lang.org/
 
 <!-- DEMO GIFS -->
