@@ -40,7 +40,7 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 * [Installation](#installation)
 	+ [From crates.io](#from-cratesio)
 	+ [Compile From Source](#compile-from-source)
-* ["How Does It Work?"](#how-does-it-work)
+* ["How does it work?"](#how-does-it-work)
 	+ [Password Hashing and Validation](#password-hashing-and-validation)
 	+ [Encrypting and Decrypting Secrets](#encrypting-and-decrypting-secrets)
 	+ ["How are secrets stored on my machine?"](#how-are-secrets-stored-on-my-machine)
@@ -88,7 +88,7 @@ cargo build --release
 
 The compiled binary is located in `himitsu/target/release/` directory and is named `hmu`. You can now move the `hmu` binary to a different location for easier access, such as `/usr/local/bin` or `usr/bin`.
 
-# "How Does It Work?"
+# "How does it work?"
 
 ## Password Hashing and Validation
 
