@@ -40,12 +40,11 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 * [Installation](#installation)
 	+ [From crates.io](#from-cratesio)
 	+ [Compile From Source](#compile-from-source)
-* [How Does It Work?](#how-does-it-work)
+* ["How Does It Work?"](#how-does-it-work)
 	+ [Password Hashing and Validation](#password-hashing-and-validation)
-	+ [Secrets Encryption and Decryption](#secrets-encryption-and-decryption)
+	+ [Encrypting and Decrypting Secrets](#encrypting-and-decrypting-secrets)
 	+ ["How are secrets stored on my machine?"](#how-are-secrets-stored-on-my-machine)
 		* [`crypt.json`](#cryptjson)
-		* [The `closet/` Directory](#the-closet-directory)
 		* [The `closet/` Directory](#the-closet-directory)
 		* [The `lookup/` Directory](#the-lookup-directory)
 * [Usage](#usage)
@@ -95,7 +94,7 @@ The compiled binary is located in `himitsu/target/release/` directory and is nam
 
 `himitsu` uses [Argon2id][Argon2] for password hashing and validation (when you set up your vault's password and each time you log in).
 
-## Secrets Encryption and Decryption
+## Encrypting and Decrypting Secrets
 
 `himitsu` uses the [XChaCha20-Poly1305][Xchacha20] AEAD algorithm to encrypt/decrypt secrets.
 
