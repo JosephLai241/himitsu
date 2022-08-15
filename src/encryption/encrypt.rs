@@ -123,3 +123,30 @@ fn update_lookup_table(
 
     Ok(())
 }
+
+#[cfg(test)]
+pub mod test_encryption {
+    use super::*;
+
+    /// Test if a SHA256 hash was correctly generated.
+    #[test]
+    fn test_generate_sha256_hash() {
+        let anatomy = Anatomy {
+            category: "unclassified".to_string(),
+            date_created: "today".to_string(),
+            label: "something".to_string(),
+            last_accessed: None,
+            tags: vec!["tag".to_string()],
+        };
+        let ciphertext: Vec<u8> = vec![01, 12, 52, 23];
+
+        let mut secret_nonce = [0u8; 24];
+        OsRng.fill_bytes(&mut secret_nonce);
+
+        let test_nonce = XNonce::from_slice(&secret_nonce);
+
+        let test_hash = generate_sha256_hash(&anatomy, &ciphertext, test_nonce);
+
+        assert!(test_hash.len() == 64);
+    }
+}

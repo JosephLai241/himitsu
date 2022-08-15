@@ -85,3 +85,52 @@ impl LookupMatch {
         Self { anatomy, hash }
     }
 }
+
+#[cfg(test)]
+pub mod test_metadata {
+    use super::*;
+
+    /// Test whether a new `Anatomy` is created from the `create_from()` method.
+    #[test]
+    fn test_anatomy_create_from() {
+        let category = "unclassified".to_string();
+        let label = "some secret".to_string();
+        let tags = vec!["some-tag".to_string()];
+
+        let test_anatomy = Anatomy::create_from(category.clone(), label.clone(), tags.clone());
+
+        assert!(test_anatomy.category == category);
+        assert!(test_anatomy.label == label);
+        assert!(test_anatomy.tags == tags);
+    }
+
+    /// Test whether a new `LookupTable` is created.
+    #[test]
+    fn test_lookuptable_new() {
+        let test_lookup_table = LookupTable::new();
+
+        assert!(test_lookup_table.table.is_empty());
+    }
+
+    /// Test whether a new `LookupMatch` is created.
+    #[test]
+    fn test_lookupmatch_create() {
+        let anatomy = Anatomy {
+            category: "unclassified".to_string(),
+            date_created: "today".to_string(),
+            label: "something".to_string(),
+            last_accessed: None,
+            tags: vec!["tag".to_string()],
+        };
+        let hash = "421c76d77563afa1914846b010bd164f395bd34c2102e5e99e0cb9cf173c1d87".to_string();
+
+        let test_lookup_match = LookupMatch::create(anatomy.clone(), hash.clone());
+
+        assert!(test_lookup_match.anatomy.category == anatomy.category);
+        assert!(test_lookup_match.anatomy.date_created == anatomy.date_created);
+        assert!(test_lookup_match.anatomy.label == anatomy.label);
+        assert!(test_lookup_match.anatomy.last_accessed == anatomy.last_accessed);
+        assert!(test_lookup_match.anatomy.tags == anatomy.tags);
+        assert!(test_lookup_match.hash == hash);
+    }
+}

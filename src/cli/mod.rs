@@ -18,3 +18,18 @@ pub struct Args {
     #[clap(subcommand)]
     pub subcommand: Option<SubCommands>,
 }
+
+#[cfg(test)]
+pub mod test_top_level_cli {
+    use assert_cmd::Command;
+
+    /// Test an invalid argument passed into the application.
+    #[test]
+    fn test_invalid_arg() {
+        Command::cargo_bin("hmu")
+            .unwrap()
+            .arg("-q")
+            .assert()
+            .failure();
+    }
+}
