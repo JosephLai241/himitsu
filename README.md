@@ -88,7 +88,7 @@ cargo build --release
 
 The compiled binary is located in `himitsu/target/release/` directory and is named `hmu`. You can now move the `hmu` binary to a different location for easier access, such as `/usr/local/bin` or `usr/bin`.
 
-# How Does It Work?
+# "How Does It Work?"
 
 ## Password Hashing and Validation
 
