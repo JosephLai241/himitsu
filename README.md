@@ -32,6 +32,7 @@ Zygomatic  |      .~  (__,.--" .^. "--.,__)  ~.
 > `Himitsu` (`hmu`) - An encrypted command-line tool for managing secrets on your machine.
 
 [![Crates.io](https://img.shields.io/crates/v/himitsu?color=orange&style=flat-square)](https://crates.io/crates/himitsu)
+[![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/JosephLai241/himitsu/Cargo%20build%20and%20test?label=Cargo%20build%2Ftest&style=flat-square)](https://github.com/JosephLai241/himitsu/actions/workflows/cargo-build-and-test.yml)
 ![License](https://img.shields.io/github/license/JosephLai241/himitsu?style=flat-square)
 
 # Table of Contents
