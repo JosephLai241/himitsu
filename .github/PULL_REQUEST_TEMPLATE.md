@@ -1,5 +1,9 @@
 # Overview
 
+[![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/JosephLai241/himitsu/Cargo%20build%20and%20test?event=pull_request&label=cargo%20build%2Ftest&style=for-the-badge)](https://github.com/JosephLai241/himitsu/actions/workflows/cargo-build-and-test.yml)
+[![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/JosephLai241/himitsu/Rustfmt?event=pull_request&label=Rustfmt&style=for-the-badge)](https://github.com/JosephLai241/himitsu/actions/workflows/rustfmt.yml)
+[![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/JosephLai241/himitsu/Clippy?event=pull_request&label=clippy&style=for-the-badge)](https://github.com/JosephLai241/himitsu/actions/workflows/clippy.yml)
+
 ## Summary
 
 Delete this line and write your summary here. Section your summary by relevance if it is lengthy.
